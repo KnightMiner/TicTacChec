@@ -55,7 +55,8 @@ local isWhite = true
 while board:getWinner() == nil do
   -- information
   print()
-  print(isWhite and "White's turn" or "Black's turn")
+  local color = isWhite and Color.WHITE or Color.BLACK
+  print(Color.color(color, color:getName() .. "'s turn"))
   print(board)
   -- prompt
   local input = io.read()

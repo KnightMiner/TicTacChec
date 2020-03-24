@@ -118,11 +118,9 @@ function Color.space(point, name, color)
       name = "  "
     end
 
-    -- foreground based on team
-    local foreground = color.ansi
     -- bg based on space
     local background = (point == nil or (point.x + point.y)%2 == 0) and 40 or 100
-    return string.format(ANSI_FORMAT, foreground, background, name)
+    return string.format(ANSI_FORMAT, color.ansi, background, name)
   else
     -- if the space is empty, return an empty string
     if name == "" then
@@ -130,6 +128,20 @@ function Color.space(point, name, color)
     end
     -- simply suffix name with the color character
     return name .. color.char
+  end
+end
+
+--[[--
+  Colors the passed text
+
+  @param color  color to use
+  @param text   Text to return
+]]
+function Color.color(color, text)
+  if isAnsi then
+    return string.format(ANSI_FORMAT, color.ansi, 4, text)
+  else
+    return text
   end
 end
 
