@@ -5,8 +5,6 @@ local Color = require("color")
 local Board = require("board")
 Point = require("point")
 
--- setup
-Color.setAnsi(false)
 -- create board
 board = Board(4)
 

@@ -63,8 +63,13 @@ Color.HEADER = ColorClass:new{
   ansi = 37
 }
 
+--- Checks if we are running a windows system
+local function isWindows()
+  return type(package) == 'table' and type(package.config) == 'string' and package.config:sub(1,1) == '\\'
+end
+
 --- If true, we support ansi colors
-local isAnsi = false
+local isAnsi = not isWindows() or os.getenv("FORCE_COLOR")
 
 --- Ansi escape character
 local ANSI_CHAR = string.char(27)
