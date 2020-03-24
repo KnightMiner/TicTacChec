@@ -138,6 +138,8 @@ end
   @param text   Text to return
 ]]
 function Color.color(color, text)
+  assert(Color.isA(color), "Argument 1 must be a color")
+  assert(type(text) == "string", "Argument 2 must be a string")
   if isAnsi then
     return string.format(ANSI_FORMAT, color.ansi, 4, text)
   else
