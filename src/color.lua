@@ -29,6 +29,13 @@ function ColorClass:getName()
   return self.name
 end
 
+--[[--
+  Display colors by their name
+]]
+function ColorClass:__tostring()
+  return self:getName()
+end
+
 --- White color
 Color.WHITE = ColorClass:new{
   name = "white",
@@ -45,11 +52,13 @@ Color.BLACK = ColorClass:new{
 }
 --- Color for spaces
 Color.SPACE = ColorClass:new{
+  name = "space",
   char = " ",
   ansi = 92
 }
 --- Color for header numbers
 Color.HEADER = ColorClass:new{
+  name = "header",
   char = " ",
   ansi = 37
 }
