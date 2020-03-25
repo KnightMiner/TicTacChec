@@ -31,13 +31,40 @@ function PointList.isA(list)
 end
 
 --[[--
+  Checks if the given point is within the list size
+
+  @param point  Point
+  @return true if the point is within the list size
+]]
+function PointList:isValid(point)
+  assert(Point.isA(point), "Argument must be instance of point")
+  return point.x >= 0 and point.x < self.size and point.y >= 0 and point.y < self.size
+end
+
+--[[--
+  Creates a table key for the given point
+
+  @param point  Point to index
+  @param size   Board size
+  @return  table key for the given point
+]]
+local function getIndex(point, size)
+  assert(Point.isA(point), "Argument must be instance of point")
+  assert(type(size) == "number" and size > 0, "Size must be a positive")
+  return point.y * size + point.x
+end
+
+--[[--
   Adds a point to the list
 
   @param point  Point to add
+  @return  the point added
 ]]
 function PointList:add(point)
   assert(Point.isA(point), "Argument must be a point")
-  table.insert(self.points, point)
+  assert(self:isValid(point), "Point outside of list size")
+  self.points[getIndex(point, self.size)] = point
+  return point
 end
 
 --[[--
@@ -48,12 +75,8 @@ end
 ]]
 function PointList:contains(point)
   assert(Point.isA(point), "Argument must be a point")
-  for _, v in ipairs(self.points) do
-    if v == point then
-      return true
-    end
-  end
-  return false
+  -- if the point is outside the list, its index may be a point without being the point
+  return self.points[getIndex(point, self.size)] == point
 end
 
 --[[--
@@ -62,12 +85,6 @@ end
   @return  string of this point list
 ]]
 function PointList:__tostring()
-  -- make a map of all points
-  local points = {}
-  for _, point in self() do
-    points[tostring(point)] = true
-  end
-
   -- print given points
   local out = {}
   -- start with a header
@@ -84,18 +101,11 @@ function PointList:__tostring()
     table.insert(line, Color.space(Point(-1,y), y, Color.HEADER))
     for x = 0, self.size - 1 do
       local space = Point(x, y)
-      table.insert(line, Color.space(space, points[tostring(space)] and 'X' or ' ', Color.SPACE))
+      table.insert(line, Color.space(space, self:contains(space) and 'X' or ' ', Color.SPACE))
     end
     table.insert(out, table.concat(line, "|"))
   end
   return table.concat(out, "\n")
-end
-
---[[--
-  Iterator over point list
-]]
-function PointList:__call()
-  return ipairs(self.points)
 end
 
 return PointList
