@@ -152,12 +152,11 @@ function Point.__mod(left, right)
 end
 
 --[[--
-  Logic to apply modulo to a point by a scalar
+  Logic to negate a point
 
-  @param other  Scalar
-  @return  new point instance
+  @return  new negated point instance
 ]]
-function Point.__unm(self)
+function Point:__unm()
   return Point(-self.x, -self.y)
 end
 
