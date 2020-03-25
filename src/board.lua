@@ -139,13 +139,19 @@ end
   @return  table of all empty spaces on the board
 ]]
 function Board:getEmptySpaces()
+  -- start with all spaces
   local spaces = self:makeList()
   for y = 0, self.size - 1 do
     for x = 0, self.size - 1 do
-      local point = Point(x,y)
-      if not self:isPawnAt(point) then
-        spaces:add(point)
-      end
+      spaces:add(Point(x,y))
+    end
+  end
+
+  -- remove any pawn spaces
+  for _, pawn in ipairs(self.pawns) do
+    local space = pawn:getSpace()
+    if space ~= nil then
+      spaces:remove(space)
     end
   end
   return spaces

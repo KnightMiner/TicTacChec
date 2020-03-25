@@ -80,6 +80,24 @@ function PointList:contains(point)
 end
 
 --[[--
+  Removes a point from the list
+
+  @param point  Point to remove
+  @return  true if a point was removed
+]]
+function PointList:remove(point)
+  assert(Point.isA(point), "Argument must be a point")
+  assert(self:isValid(point), "Point outside of list size")
+  local index = getIndex(point, self.size)
+  -- remove if its present
+  if self.points[index] ~= nil then
+    self.points[index] = nil
+    return true
+  end
+  return false
+end
+
+--[[--
   Converts the point list to a string
 
   @return  string of this point list
