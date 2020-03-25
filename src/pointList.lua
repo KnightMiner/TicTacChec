@@ -42,19 +42,6 @@ function PointList:isValid(point)
 end
 
 --[[--
-  Creates a table key for the given point
-
-  @param point  Point to index
-  @param size   Board size
-  @return  table key for the given point
-]]
-local function getIndex(point, size)
-  assert(Point.isA(point), "Argument must be instance of point")
-  assert(type(size) == "number" and size > 0, "Size must be a positive")
-  return point.y * size + point.x
-end
-
---[[--
   Adds a point to the list
 
   @param point  Point to add
@@ -63,7 +50,7 @@ end
 function PointList:add(point)
   assert(Point.isA(point), "Argument must be a point")
   assert(self:isValid(point), "Point outside of list size")
-  self.points[getIndex(point, self.size)] = point
+  self.points[point:getIndex(self.size)] = point
   return point
 end
 
@@ -76,7 +63,7 @@ end
 function PointList:contains(point)
   assert(Point.isA(point), "Argument must be a point")
   -- if the point is outside the list, its index may be a point without being the point
-  return self.points[getIndex(point, self.size)] == point
+  return self.points[point:getIndex(self.size)] == point
 end
 
 --[[--
@@ -88,7 +75,7 @@ end
 function PointList:remove(point)
   assert(Point.isA(point), "Argument must be a point")
   assert(self:isValid(point), "Point outside of list size")
-  local index = getIndex(point, self.size)
+  local index = point:getIndex(self.size)
   -- remove if its present
   if self.points[index] ~= nil then
     self.points[index] = nil

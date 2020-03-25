@@ -20,6 +20,10 @@ end
 -- allow calling Point() as an alternative to Point:new()
 setmetatable(Point, {__call = Point.new})
 
+-------------
+-- Helpers --
+-------------
+
 --[[--
   Checks if the given object is a point
 
@@ -29,6 +33,28 @@ setmetatable(Point, {__call = Point.new})
 function Point.isA(point)
   return getmetatable(point) == Point
 end
+
+--[[--
+  Converts a point to an index for a table key
+
+  @param point  point to index
+  @param size   board size for index
+  @return  table key for this point for the board size
+]]
+function Point.getIndex(point, size)
+  assert(type(size) == "number" and size > 0, "Size must be a positive integer")
+  -- index nil as -1 so its numeric
+  if point == nil then
+    return -1
+  end
+  -- regular points
+  assert(Point.isA(point), "Argument must be instance of point")
+  return point.y * size + point.x
+end
+
+----------------------
+-- Point operations --
+----------------------
 
 --- Both are allowed to be points
 local MODE_BOTH = 0
@@ -155,6 +181,10 @@ end
 function Point:__tostring()
   return string.format("Point(%s,%s)", self.x, self.y)
 end
+
+----------------------
+-- Vector functions --
+----------------------
 
 --[[--
   Rotates the given point clockwise by the angle
