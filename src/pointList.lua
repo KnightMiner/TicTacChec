@@ -12,6 +12,7 @@ PointList.__index = PointList
 function PointList:new(size)
   assert(type(size) == "number", "Size must be a number")
   return setmetatable({
+    count = 0,
     size = size,
     points = {}
   }, self)
@@ -45,13 +46,19 @@ end
   Adds a point to the list
 
   @param point  Point to add
-  @return  the point added
+  @return  true if a point was added
 ]]
 function PointList:add(point)
   assert(Point.isA(point), "Argument must be a point")
   assert(self:isValid(point), "Point outside of list size")
-  self.points[point:getIndex(self.size)] = point
-  return point
+  -- if its not contained, increase the count and return true
+  local index = point:getIndex(self.size)
+  if self.points[index] == nil then
+    self.count = self.count + 1
+    self.points[index] = point
+    return true
+  end
+  return false
 end
 
 --[[--
@@ -76,12 +83,22 @@ function PointList:remove(point)
   assert(Point.isA(point), "Argument must be a point")
   assert(self:isValid(point), "Point outside of list size")
   local index = point:getIndex(self.size)
-  -- remove if its present
+  -- remove if its present and decrease the count
   if self.points[index] ~= nil then
+    self.count = self.count - 1
     self.points[index] = nil
     return true
   end
   return false
+end
+
+--[[--
+  Checks if the given point list is empty
+
+  @return  true if the list is empty
+]]
+function PointList:isEmpty()
+  return self.count == 0
 end
 
 --[[--
