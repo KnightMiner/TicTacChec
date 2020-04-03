@@ -52,4 +52,17 @@ function PawnType:getValidMoves(board, pawn)
   return {}
 end
 
+--[[--
+  Converts a direction and an amount from the neural network into a move for this pawn
+
+  @param board  Board containing the pawn
+  @param pawn   Current pawn instance
+  @param direction  Angular percentage from 0 to 1
+  @param amount     Distance to travel out of maximum from 0 to 1
+  @return  Move made, or nil if no valid moves
+]]
+function PawnType:getMove(board, pawn, direction, amount)
+  return nil
+end
+
 return PawnType

@@ -100,6 +100,21 @@ function Board:isPawnAt(point)
 end
 
 --[[--
+  Gets a board pawn by index and color
+
+  @param index  Pawn index
+  @param color  Pawn color
+  @return pawn at index and color
+]]
+function Board:getPawn(index, color)
+  assert(type(index) == "number", "Argument #1 must be a number")
+  -- TODO: validate index
+  assert(Color.isA(color), "Argument #2 must be a color")
+
+  -- TODO: implement
+end
+
+--[[--
   Returns the pawn at the given space
 
   @param point  Pawn to find
@@ -155,6 +170,17 @@ function Board:getEmptySpaces()
     end
   end
   return spaces
+end
+
+--[[--
+  Gets the nearest empty space to the given percent coordinate
+
+  @param percentX  Percent in the X direction
+  @param percentY  Percent in the Y direction
+  @reutrn  Nearest empty space to the given percentages
+]]
+function Board:getNearestEmptySpace(percentX, percentY)
+  -- TODO: implement
 end
 
 ------------------
