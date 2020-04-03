@@ -161,10 +161,11 @@ function Point:__unm()
 end
 
 --[[--
-  Logic to apply modulo to a point by a scalar
+  Logic to compare two points
 
-  @param other  Scalar
-  @return  new point instance
+  @param left   Possible left point
+  @param right  Possible right point
+  @return  true if the points are the same
 ]]
 function Point.__eq(left, right)
   return Point.isA(left) and Point.isA(right)
