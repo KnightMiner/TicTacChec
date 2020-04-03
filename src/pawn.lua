@@ -119,6 +119,13 @@ function Pawn:setSpace(point)
     assert(not self.board:isPawnAt(point), "Point must be empty")
   end
 
+  -- if there is an existing pawn, remove it
+  local current = self.board:getPawnAt(point)
+  if current ~= nil then
+    current.space = nil
+  end
+
+  -- move self
   self.space = point
 end
 
