@@ -140,7 +140,7 @@ setmetatable(Definition, {__call = Definition.new})
   @return  true if the object is a network definition
 ]]
 function Definition.isA(definition)
-  return getmetatable(definition) == Defintion
+  return getmetatable(definition) == Definition
 end
 
 --[[--
