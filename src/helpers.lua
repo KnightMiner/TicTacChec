@@ -1,3 +1,4 @@
+local Point = require("point")
 local helpers = {}
 
 --[[--
@@ -9,9 +10,11 @@ local helpers = {}
   @param point  Point to check
   @return  true if should continue checking spaces behind
 ]]
-function helpers.addPoint(board, pawn, moves, point)
+function helpers.addPoint(pawn, moves, point)
+  assert(type(moves) == "table", "Argument #2 must be a table")
+  assert(Point.isA(point), "Argument #3 must be a point")
   -- check if there is a pawn on the space
-  local current = board:getPawnAt(point)
+  local current = pawn:getBoard():getPawnAt(point)
   if current ~= nil then
     -- if there is, can move there if not our color
     if not current:isColor(pawn) then
@@ -33,12 +36,12 @@ end
   @param moves  Move list
   @param dir    Point direction
 ]]
-function helpers.addLine(board, pawn, moves, dir)
+function helpers.addLine(pawn, moves, dir)
   -- loop while the space is valid
   local point = pawn:getSpace() + dir
-  while board:isValid(point) do
+  while pawn:getBoard():isValid(point) do
     -- add the point, stop if done
-    if not helpers.addPoint(board, pawn, moves, point) then
+    if not helpers.addPoint(pawn, moves, point) then
       break
     end
     -- increment for next time

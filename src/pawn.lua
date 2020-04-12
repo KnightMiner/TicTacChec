@@ -71,12 +71,33 @@ end
 ---------------------
 
 --[[--
+  Gets the pawn's current board
+  @return  Board containing this pawn
+]]
+function Pawn:getBoard()
+  return self.board
+end
+
+--[[--
   Gets the type of this pawn
 
   @return pawn type
 ]]
 function Pawn:getType()
   return self.type
+end
+
+--[[--
+  Checks if a movement in the given direction is valid for this pawn
+
+  @param offset  Direction to check
+  @return  True if the given direction is valid, false if invalid
+]]
+function Pawn:isDirectionValid(offset)
+  assert(Point.isA(offset), "Parameter must be a point")
+  assert(self.board ~= nil, "Pawn not added to a board")
+  assert(self.space ~= nil, "Pawn not placed on the board")
+  return self.type:isDirectionValid(self, offset)
 end
 
 --[[--
@@ -87,7 +108,7 @@ end
 function Pawn:getValidMoves()
   assert(self.board ~= nil, "Pawn not added to a board")
   if self.space ~= nil then
-    return self.type:getValidMoves(self.board, self)
+    return self.type:getValidMoves(self)
   else
     return self.board:getEmptySpaces()
   end
@@ -99,8 +120,7 @@ end
 
 --[[--
   Gets the pawn's current space
-
-  @param point  pawn's space or nil if off board
+  @return  pawn's space or nil if off board
 ]]
 function Pawn:getSpace()
   return self.space
@@ -194,21 +214,21 @@ end
 
   @param direction  Angular percentage from 0 to 1
   @param amount     Distance to travel out of maximum from 0 to 1
-  @return  Move made, or nil if no valid moves
+  @return  true if a move is made, or false otherwise
 ]]
 function Pawn:moveBy(direction, amount)
   assert(type(direction) == "number" and direction >= 0 and direction <= 1, "Argument #1 must be a number between 0 and 1")
   assert(type(amount) == "number" and amount >= 0 and amount <= 1, "Argument #1 must be a number between 0 and 1")
 
   -- ensure a move exists
-  local target = self.type:getMove(self.board, self, direction, amount)
+  local target = self.type:getMove(self, direction, amount)
   if target == nil then
     return nil
   end
 
   -- make move if valid
   self:moveTo(target)
-  return target
+  return board
 end
 
 --[[--

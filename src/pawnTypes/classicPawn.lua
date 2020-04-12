@@ -2,16 +2,26 @@ local Color = require("color")
 local PawnType = require("pawnType")
 local Point = require("point")
 
-local Pawn = PawnType:new({icon = "Pa"})
+
+--- List of directions a pawn can choose, though half are invalid for each pawn
+local VALID_DIRECTIONS = {
+  [0.000] = Point.UP,
+  [0.125] = Point.UP + Point.RIGHT,
+  [0.325] = Point.DOWN + Point.RIGHT,
+  [0.500] = Point.DOWN,
+  [0.625] = Point.DOWN + Point.LEFT,
+  [0.875] = Point.UP + Point.LEFT
+}
+local Pawn = PawnType:new({icon = "Pa", directions = VALID_DIRECTIONS})
 
 --[[--
   Gets a list of valid moves for this pawn
 
-  @param board  Board containing the pawn
   @param pawn   Current pawn instance
   @return  table of valid spaces this pawn can move to
 ]]
-function Pawn:getValidMoves(board, pawn)
+function Pawn:getValidMoves(pawn)
+  local board = pawn:getBoard()
   local moves = board:makeList()
   local space = pawn:getSpace()
   local dir = pawn:getColor():getDir()
@@ -30,6 +40,37 @@ function Pawn:getValidMoves(board, pawn)
   end
 
   return moves
+end
+
+--[[--
+  Checks if a movement in the given direction is valid for this pawn
+
+  @param pawn    Current pawn instance
+  @param offset  Direction to check
+  @return  True if the given direction is valid, false if invalid
+]]
+function Pawn:isDirectionValid(pawn, offset)
+  -- space must be valid
+  local target = pawn:getSpace() + offset
+  local board = pawn:getBoard()
+  if not board:isValid(target) then
+    return false
+  end
+
+  -- pawn is limited to one direction
+  local dir = pawn:getColor():getDir()
+  if offset.y ~= pawn:getColor():getDir().y then
+    return false
+  end
+
+  -- pawns move horizontals, attack on diagonal
+  if offset.x == 0 then
+    -- not filled
+    return not board:isPawnAt(target)
+  else
+    -- filled and not our color
+    return board:isPawnAt(target) and not board:isColorAt(pawn, target)
+  end
 end
 
 return Pawn
