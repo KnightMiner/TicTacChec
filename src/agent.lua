@@ -34,25 +34,24 @@ end
 -- allow calling Agent() as an alternative to Agent:new()
 setmetatable(Agent, {__call = Agent.new})
 
---- Nodes needed for output for this agent to function
---- TODO: allow number of pawns to be passed as a parameter?
-local OUTPUT_NODES = {
-  "SigPos", "SigPos", "SigPos", "SigPos", -- pawns
-  "SigPos", -- placing piece
-  "Mod", "SigPos", -- direction, amount
-  "SigPos", "SigPos" -- X, Y
-}
-
 --[[--
   Creates a network defintion valid for an agent with the given hidden layers
 
-  @param ...  Hidden layers
+  @param pawns  Number of pawns for each team
+  @param ...    Hidden layers
   @return  Definition for a network valid for an agent
 ]]
-function Agent.makeDefinition(...)
-  -- have 8 inputs, one for each pawn space
-  -- TODO: allow passing in pawn count?
-  return Network.Definition(OUTPUT_NODES, 8, ...)
+function Agent.makeDefinition(pawns, ...)
+  assert(type(pawns) == "number" and pawns > 0 and pawns % 1 == 0, "Pawns must be a positive integer")
+
+  -- start with X and Y value nodes
+  local outputs = {"Clamp", "Clamp"}
+  -- add decision node for each piece type
+  for i = 1, pawns do
+    table.insert(outputs, "Sig")
+  end
+  -- two inputs per team
+  return Network.Definition(outputs, pawns * 2, ...)
 end
 
 --[[--
