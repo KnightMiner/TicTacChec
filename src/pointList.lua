@@ -100,6 +100,32 @@ end
 function PointList:isEmpty()
   return self.count == 0
 end
+--[[--
+    Finds the closest point to the pawn
+    @param inputX x percentage
+    @param inputY y percentage
+    @return point that is closest
+]]
+function PointList:findClosest(inputX, inputY)
+  assert(type(inputX) == "number", "Size must be a number")
+  assert(type(inputY) == "number", "Size must be a number")
+  assert(not self:isEmpty(), "There are no points available on the board.")
+  -- Convert percentages to points
+  inputX = inputX * self.size - 0.5
+  inputY = inputY * self.size - 0.5
+  -- Set smallest distance to size from corner to corner
+  local smallestDistance = self.size * 2
+  local closestPoint
+  -- iterate through available points
+  for _, point in pairs(self.points) do
+    local tempDistance = math.sqrt((inputX - point.x)^2 + (inputY - point.y)^2)
+    if tempDistance < smallestDistance then
+      closestPoint = point
+      smallestDistance = tempDistance
+    end
+  end
+  return closestPoint
+end
 
 --[[--
   Converts the point list to a string

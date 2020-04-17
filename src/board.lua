@@ -172,17 +172,6 @@ function Board:getEmptySpaces()
   return spaces
 end
 
---[[--
-  Gets the nearest empty space to the given percent coordinate
-
-  @param percentX  Percent in the X direction
-  @param percentY  Percent in the Y direction
-  @reutrn  Nearest empty space to the given percentages
-]]
-function Board:getNearestEmptySpace(percentX, percentY)
-  -- TODO: implement
-end
-
 ------------------
 -- Win checking --
 ------------------
