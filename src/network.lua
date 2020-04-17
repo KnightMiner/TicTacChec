@@ -9,6 +9,9 @@ local Node = require("node")
 local Network = {}
 Network.__index = Network
 
+-- ensure a seed is set
+math.randomseed(os.time())
+
 -- no constructor, it will be handled by Defintion
 
 --[[--
@@ -83,9 +86,42 @@ function Network:breed(mate, replacement, mutation)
   assert(Network.isA(mate), "Argument #1 must be a Network")
   assert(type(replacement) == "number" and replacement >= 0 and replacement <= 1, "Argument #2 must be a number between 0 and 1")
   assert(type(mutation) == "number" and mutation >= 0 and mutation <= 1, "Argument #3 must be a number between 0 and 1")
-  assert(self.defintion == mate.definition, "Networks are not compatible")
+  assert(self.definition == mate.definition, "Networks are not compatible")
 
-  -- TODO implement
+  local parent = {}
+  local mutations = {}
+  for i = 1, #self.definition.layers do
+    parent[i] = {}
+    mutations[i] = {}
+    for j = 1, self.definition:getSize(i+1) do
+      parent[i][j] = {}
+      mutations[i][j] = {}
+      for k = 1, self.definition:getSize(i) do
+        if math.random() > replacement then parent[i][j][k] = true else parent[i][j][k] = false end
+        -- TODO move mutation to inside if
+        if math.random() > mutation then mutations[i][j][k] = false else mutations[i][j][k] = true end
+      end
+    end
+  end
+  local newWeights = {}
+  for nodeLayer = 1, #self.definition.layers do
+    newWeights[nodeLayer] = {}
+    for j = 1, self.definition:getSize(nodeLayer+1) do
+      newWeights[nodeLayer][j] = {}
+      for k = 1, self.definition:getSize(nodeLayer) do
+        if mutations[nodeLayer][j][k] then
+          newWeights[nodeLayer][j][k] = math.random() * 2 - 1
+        else
+          if parent[nodeLayer][j][k] then
+            newWeights[nodeLayer][j][k] = self.weights[nodeLayer][j][k]
+          else
+            newWeights[nodeLayer][j][k] = mate.weights[nodeLayer][j][k]
+          end
+        end
+      end
+    end
+  end
+  return self.definition:build(newWeights)
 end
 
 --[[--
@@ -248,9 +284,18 @@ end
   @return new Network with random weights
 ]]
 function Definition:generate()
-  -- TODO implement
+  local weights = {}
+  for nodeLayer = 1, #self.layers do
+    weights[nodeLayer] = {}
+    for i = 1, self:getSize(nodeLayer+1) do
+      weights[nodeLayer][i]={}
+      for j = 1, self:getSize(nodeLayer) do
+        weights[nodeLayer][i][j] = math.random() * 2 - 1
+      end
+    end
+  end
+  return self:build(weights)
 end
-
 
 --[[--
   Logic to compare two network definitions
