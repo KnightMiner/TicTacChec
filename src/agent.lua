@@ -91,12 +91,66 @@ end
 --------------
 
 --[[--
+  Gets the largest line count for the color
+
+  @param board  Board instance
+  @param color  Color to check for a line
+  @return between 0 and 4 based on number of pieces in a line
+]]
+local function getLinedUp(board, color)
+  -- TODO
+  return 0
+end
+
+--[[--
+  Gets the score based on how many pieces block our line
+
+  @param board  Board instance
+  @param color  Color being blocked
+]]
+local function getBlockedScore(board, color)
+  -- TODO
+  -- 0 if no lines of 3
+  -- find our pieces, getLinedUp(board, color)
+  -- count opponents pieces in line
+    -- if it cannot be captured, worth 2
+      -- if not piece:getValidMoves():contains(blocker:getSpace())
+    -- if it can be captured by a piece in the line, worth 1
+    -- if it can be captured by a piece not in the line, worth 0
+  return 0
+end
+
+--[[--
+  Gets a score based on how many lines we are blocking
+
+  @param board  Board instance
+  @param color  Color being blocked
+]]
+local function getBlockingScore(board, color)
+  -- TODO: update to support more than 2 players
+  return getBlockedScore(board, board:getOpponents(color)[1])
+end
+
+--[[--
   Scores this agent based on the result of their game
 
   @return  Score for this game between 0 and 1
 ]]
 function Agent:calcScore()
-  -- TODO: calculate score
+  assert(Board.isA(self.board), "Board not set")
+  assert(Color.isA(self.color), "Board not set")
+
+  -- TODO: weights
+  self.score
+    = getLinedUp(self.board, self.color)
+    + getBlockingScore(self.board, self.color)
+    - getBlockedScore(self.board, self.color)
+    - self.board:getMoveCount()
+
+  for _, opponents in ipairs(board:getOpponents(self.color)) do
+    -- TODO: weight
+    self.score = self.score - getLinedUp(self.board, opponents)
+  end
 
   return self.score
 end

@@ -18,7 +18,8 @@ function Board:new(size)
   return setmetatable({
     size = size,
     pawns = {},
-    colors = {}
+    colors = {},
+    moves = 0
   }, self)
 end
 
@@ -152,6 +153,35 @@ function Board:isColorAt(color, point)
   assert(Point.isA(point), "Argument must be instance of point")
   local pawn = self:getPawnAt(point)
   return pawn ~= nil and pawn:isColor(color)
+end
+
+--[[--
+  Gets a list of all opponents to the given color
+  @param color  Color to check for opponents
+  @return  Table of colors of opponents
+]]
+function Board:getOpponents(color)
+  -- TODO
+end
+
+-------------------
+-- Move counting --
+-------------------
+
+--[[--
+  Call when making a move to increment the move count
+]]
+function Board:incrementMoves()
+  self.moves = self.moves + 1
+end
+
+--[[--
+  Gets the number of moves made on this board
+
+  @return Number of moves made on this board
+]]
+function Board:getMoveCount()
+  return self.moves
 end
 
 --------------------

@@ -166,24 +166,9 @@ function Pawn:addTo(point)
   end
   -- move the pawn and check win
   self.space = point
+  self.board:incrementMoves()
   self.board:checkWin(self)
   return self.board
-end
-
---[[--
-  Adds at the nearest space to the given percent coordinates
-
-  @param percentX  Percent in the X direction
-  @param percentY  Percent in the Y direction
-  @return  The chosen space
-]]
-function Pawn:addNear(percentX, percentY)
-  assert(type(percentX) == "number" and percentX >= 0 and percentX <= 1, "Argument #1 must be a number between 0 and 1")
-  assert(type(percentY) == "number" and percentY >= 0 and percentY <= 1, "Argument #1 must be a number between 0 and 1")
-
-  -- fetch nearest empty space from the board
-  self:addAt(self.board:getNearestEmptySpace(percentX, percentY))
-  return self.space
 end
 
 --[[--
@@ -205,6 +190,7 @@ function Pawn:moveTo(point)
   end
   -- move the pawn and check win
   self.space = point
+  self.board:incrementMoves()
   self.board:checkWin(self)
   return self.board
 end
