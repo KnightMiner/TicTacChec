@@ -13,19 +13,15 @@ Agent.__index = Agent
   @return  Board object
 ]]
 function Agent:new(data)
+  -- network required
   assert(Network.isA(data.network), "Data must contain a network")
   -- start creating agent
   local agent = {network = data.network}
+
+  -- score is optional
   if data.score ~= nil then
-    -- clear board and color if already scored
     assert(type(data.score) == "number" and data.score >= 0 and data.score <= 1, "Score must be a number")
     agent.score = data.score
-  else
-    -- must have board and color
-    assert(Board.isA(data.board), "Data must have a Board")
-    assert(Color.isA(data.color), "Data must have a Color")
-    agent.board = data.board
-    agent.color = data.color
   end
   -- create final object
   return setmetatable(agent, self)
@@ -136,8 +132,10 @@ end
   @return  Score for this game between 0 and 1
 ]]
 function Agent:calcScore()
-  assert(Board.isA(self.board), "Board not set")
-  assert(Color.isA(self.color), "Board not set")
+  -- if no board, do nothing
+  if not self.board or not self.color then
+    return nil
+  end
 
   -- TODO: weights
   self.score
@@ -189,6 +187,15 @@ function Agent:breed(mate, mutation)
 end
 
 --[[--
+  Checks if the agent uses the given network definition
+  @param defintion  Definition to check
+  @return true if the definition is used
+]]
+function Agent:isDefinition(definition)
+  return self.network.defintion == defintion
+end
+
+--[[--
   Saves the agent to a string
 
   @param calcScore  if true, gets the score before saving
@@ -203,7 +210,7 @@ function Agent:save(calcScore)
   end
 
   -- score is optional, set only if provided
-  local out = {"Agent{weights=", network:getWeightString()}
+  local out = {"{weights=", self.network:getWeightString()}
   if self.score ~= nil then
     table.insert(out, ",score=")
     table.insert(out, self.score)
