@@ -172,6 +172,15 @@ function Board:getOpponents(color)
   return colors
 end
 
+--[[--
+  Gets the number of colors in the current board, each color representing a team
+
+  @return  Number of teams on the board
+]]
+function Board:getColorCount()
+  return #self.colors
+end
+
 -------------------
 -- Move counting --
 -------------------
