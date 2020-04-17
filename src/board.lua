@@ -18,8 +18,9 @@ function Board:new(size)
   return setmetatable({
     size = size,
     pawns = {},
-    colors = {},
-    moves = 0
+    teamPawns = {},
+    moves = 0,
+    colors = {}
   }, self)
 end
 
@@ -82,12 +83,13 @@ function Board:addPawn(pawn)
   assert(Pawn.isA(pawn), "Argument must be instance of pawn")
   local color = pawn:getColor()
   assert(color ~= nil, "Pawn color must be defined")
-  if self.colors[color] == nil then
-    self.colors[color] = {}
+  if self.teamPawns[color] == nil then
+    self.teamPawns[color] = {}
+    table.insert(self.colors, color)
   end
   -- add pawn to both lists
   table.insert(self.pawns, pawn)
-  table.insert(self.colors[color], pawn)
+  table.insert(self.teamPawns[color], pawn)
   pawn.board = self
 end
 
@@ -118,7 +120,7 @@ end
 function Board:getPawn(color, index)
   assert(type(index) == "number", "Argument #1 must be a number")
   assert(Color.isA(color), "Argument #2 must be a color")
-  local pawns = self.colors[color]
+  local pawns = self.teamPawns[color]
   if pawns == nil then
     return nil
   end
@@ -161,7 +163,13 @@ end
   @return  Table of colors of opponents
 ]]
 function Board:getOpponents(color)
-  -- TODO
+  local colors = {}
+  for _, boardColor in ipairs(self.colors) do
+    if color ~= boardColor then
+      table.insert(colors, boardColor)
+    end
+  end
+  return colors
 end
 
 -------------------
