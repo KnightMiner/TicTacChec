@@ -107,7 +107,7 @@ end
   @param name        Node type name
   @param activation  Activation function for this type
 ]]
-local function makeNode(name, activation)
+local function addNode(name, activation)
   local fullName = "Node." .. name
   Node[name] = function(weights)
     return Node:new(fullName, activation, weights)
@@ -115,7 +115,7 @@ local function makeNode(name, activation)
   validTypes[name] = true
 end
 --- remake identity as a node child for conveience
-makeNode("I", identity)
+addNode("I", identity)
 
 --- Clamps the input to between 0 and 1
 local function clamp(input)
@@ -126,24 +126,24 @@ local function clamp(input)
   end
   return input
 end
-makeNode("Clamp", clamp)
+addNode("Clamp", clamp)
 
 --- Applies modulo to the input, between 0 and 1
 local function mod(input)
   return input % 1
 end
-makeNode("Mod", mod)
+addNode("Mod", mod)
 
 --- Sigmoid function used for hidden layers
 local function sig(input)
   return input / (1 + math.abs(input))
 end
-makeNode("Sig", sig)
+addNode("Sig", sig)
 
 --- Sigmoid function to clamp values between 0 and 1
 local function sigPos(input)
   -- TODO: implement
 end
-makeNode("SigPos", sig)
+--addNode("SigPos", sig)
 
 return Node
