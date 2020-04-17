@@ -17,7 +17,8 @@ function Board:new(size)
   assert(type(size) == "number", "Size must be a number")
   return setmetatable({
     size = size,
-    pawns = {}
+    pawns = {},
+    colors = {}
   }, self)
 end
 
@@ -78,7 +79,14 @@ end
 ]]
 function Board:addPawn(pawn)
   assert(Pawn.isA(pawn), "Argument must be instance of pawn")
+  local color = pawn:getColor()
+  assert(color ~= nil, "Pawn color must be defined")
+  if self.colors[color] == nil then
+    self.colors[color] = {}
+  end
+  -- add pawn to both lists
   table.insert(self.pawns, pawn)
+  table.insert(self.colors[color], pawn)
   pawn.board = self
 end
 
@@ -102,16 +110,18 @@ end
 --[[--
   Gets a board pawn by index and color
 
-  @param index  Pawn index
+  @param index  Pawn index, between 1 and number of pawn types
   @param color  Pawn color
   @return pawn at index and color
 ]]
-function Board:getPawn(index, color)
+function Board:getPawn(color, index)
   assert(type(index) == "number", "Argument #1 must be a number")
-  -- TODO: validate index
   assert(Color.isA(color), "Argument #2 must be a color")
-
-  -- TODO: implement
+  local pawns = self.colors[color]
+  if pawns == nil then
+    return nil
+  end
+  return pawns[index]
 end
 
 --[[--
