@@ -91,6 +91,16 @@ end
 -- Special node types --
 ------------------------
 
+--- Map of valid node types
+local validTypes = {}
+
+--[[--
+  Checks if the given node type is valid
+]]
+function Node.isTypeValid(name)
+  return validTypes[name] ~= nil
+end
+
 --[[--
   Macro function to generate constructors for node types
 
@@ -102,6 +112,7 @@ local function makeNode(name, activation)
   Node[name] = function(weights)
     return Node:new(fullName, activation, weights)
   end
+  validTypes[name] = true
 end
 --- remake identity as a node child for conveience
 makeNode("I", identity)

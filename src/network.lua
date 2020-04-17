@@ -151,12 +151,15 @@ function Definition:new(outputs, ...)
   assert(type(outputs) == "table", "Outputs must be a table of strings")
   for _, v in ipairs(outputs) do
     assert(type(v) == "string", "Outputs must be a table of strings")
+    if not Node.isTypeValid(v) then
+      error("Invalid node type " .. v)
+    end
   end
   -- validate layers
   local layers = {...}
   assert(#layers > 0, "Must have at least one layer")
   for _, v in ipairs(layers) do
-    assert(type(v) == "number", "Layers must be numbers")
+    assert(type(v) == "number" and v > 0 and v % 1 == 0, "Layers must be positive integers")
   end
 
   -- create the network definition
@@ -305,9 +308,23 @@ end
   @return  true if they are equal
 ]]
 function Definition.__eq(left, right)
-  -- TODO: comparison
-  return false
-  --return Definition.isA(left) and Definition.isA(right)
+  -- ensure both are network definition
+  if not Definition.isA(left) or not Definition.isA(right) then
+    return false
+  end
+  -- same number of layers and outputs
+  if #left.layers ~= #right.layers or #left.outputs ~= #right.outputs then
+    return false
+  end
+  -- layers are the same
+  for i = 1, #left.layers do
+    if left.layers[i] ~= right.layers[i] then return false end
+  end
+  -- outputs are the same
+  for i = 1, #left.outputs do
+    if left.outputs[i] ~= right.outputs[i] then return false end
+  end
+  return true
 end
 
 return Network
