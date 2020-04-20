@@ -181,6 +181,18 @@ function Board:getColorCount()
   return #self.colors
 end
 
+--[[--
+  Gets the number of pawns for a given color
+
+  @param color  Color to check
+  @return
+]]
+function Board:getPawnCount(color)
+  assert(Color.isA(color), "Argument must be instance of color")
+  local pawns = self.teamPawns[color]
+  return pawns and #pawns or 0
+end
+
 -------------------
 -- Move counting --
 -------------------
