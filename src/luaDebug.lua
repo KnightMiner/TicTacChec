@@ -1,9 +1,12 @@
 --package.path = "../?.lua;" .. package.path
 
 -- imports
-local Color = require("color")
+Color = require("color")
+Pawn = require("pawn")
 local Board = require("board")
 Point = require("point")
+Generation = require("generation")
+Agent = require("agent")
 
 -- create board
 board = Board(4)
@@ -11,7 +14,7 @@ board = Board(4)
 -- add pieces to the board
 -- true means use the key name as the pawn type
 -- or use require to set a specific type
-local Pawn = require("pawn")
+local PawnType = require("pawnTypes/pawn")
 local types = {
   rook   = true,
   knight = true,
@@ -24,7 +27,6 @@ white = {}
 black = {}
 
 -- add all pawns to the board
-local Pawn = require("pawn")
 for key, type in pairs(types) do
   if type == true then
     type = require("pawnTypes/" .. key)
