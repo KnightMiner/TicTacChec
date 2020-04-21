@@ -203,7 +203,7 @@ local function playGame(agent1, agent2, moves)
   assert(agent1:getPawnCount() == agent2:getPawnCount(), "Agents must have the same number of pawns")
   assert(agent1:getPlayers() == agent2:getPlayers(), "Agents must have the same number of players")
   local currentMove = 1
-  local gameBoard = Board(agent1:getPawnCount())
+  local gameBoard = gameBoard(agent1:getPawnCount())
 
   agent1:setBoard(gameBoard, Color.WHITE)
   agent2:setBoard(gameBoard, Color.BLACK)
