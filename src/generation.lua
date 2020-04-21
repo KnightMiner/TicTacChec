@@ -184,7 +184,7 @@ end
 local function makeBoard(size)
   local board = Board(size)
 
-  for _, type in ipairs(types) do
+  for _, type in ipairs(TYPES) do
     board:addPawn(Pawn(type, Color.WHITE))
     board:addPawn(Pawn(type, Color.BLACK))
   end
@@ -201,9 +201,9 @@ end
 ]]
 local function playGame(agent1, agent2, moves)
   assert(agent1:getPawnCount() == agent2:getPawnCount(), "Agents must have the same number of pawns")
-  assert(agent1:getPlayers() == agent2:getPlayers(), "Agents must have the same number of players")
+  assert(agent1:getPlayerCount() == agent2:getPlayerCount(), "Agents must have the same number of players")
   local currentMove = 1
-  local gameBoard = gameBoard(agent1:getPawnCount())
+  local gameBoard = makeBoard(agent1:getPawnCount())
 
   agent1:setBoard(gameBoard, Color.WHITE)
   agent2:setBoard(gameBoard, Color.BLACK)

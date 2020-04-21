@@ -22,7 +22,7 @@ Agent.__index = Agent
   Returns the number of players based on the given network definition
   @return Number of players  for the given network
 ]]
-local function getPawns(network)
+local function getPawnCount(network)
   assert(Network.isA(network), "Argument #1 must be a network")
   -- two outputs represent the X and Y coords, remainder of the outputs is pawns
   local definition = network:getDefinition()
@@ -33,11 +33,11 @@ end
   Returns the number of pawns supported by the network
   @return  Number of pawns for the given network
 ]]
-local function getPlayers(network)
+local function getPlayerCount(network)
   assert(Network.isA(network), "Argument #1 must be a network")
   -- one set of pawns inputs for each player
   local definition = network:getDefinition()
-  return math.floor(definition:getSize(1) / getPawns(network))
+  return math.floor(definition:getSize(1) / getPawnCount(network))
 end
 
 --[[--
@@ -50,9 +50,9 @@ function Agent:new(data)
   -- network required
   assert(Network.isA(data.network), "Data must contain a network")
   -- validate the network works for an agent
-  local players = getPlayers(data.network)
+  local players = getPlayerCount(data.network)
   assert(players > 0, "Network must have at least 1 player")
-  local pawns = getPawns(data.network)
+  local pawns = getPawnCount(data.network)
   assert(pawns > 0 and pawns % 1 == 0, "Pawns must be an integer greater than 0")
 
   -- start creating agent
@@ -116,16 +116,16 @@ end
   Gets the number of pawns this agent supports
   @return  Number of pawns for this agent
 ]]
-function Agent:getPawns()
-  return getPawns(self.network)
+function Agent:getPawnCount()
+  return getPawnCount(self.network)
 end
 
 --[[--
   Gets the number of pawns this agent supports
   @return  Number of pawns for this agent
 ]]
-function Agent:getPlayers()
-  return getPlayers(self.network)
+function Agent:getPlayerCount()
+  return getPlayerCount(self.network)
 end
 
 --[[--
@@ -137,8 +137,8 @@ function Agent:setBoard(board, color)
   assert(Board.isA(board), "Argument #1 must be a Board")
   assert(Color.isA(color), "Argument #2 must be a Color")
   -- validate the board
-  assert(board:getColorCount() == self:getPlayers(), "Board does not have the right number of players for this network")
-  local pawns = self:getPawns()
+  assert(board:getColorCount() == self:getPlayerCount(), "Board does not have the right number of players for this network")
+  local pawns = self:getPawnCount()
   assert(board:getPawnCount(color) > 0, "Board must have at least one pawn in that color")
   for boardColor in board:colorIterator() do
     assert(board:getPawnCount(boardColor) == pawns, "Invalid pawn count for colors")
@@ -175,7 +175,7 @@ function Agent:makeMove()
   assert(self.board ~= nil and self.color ~= nil, "Must set agent board before getting moves")
   -- out pawns go first as inputs
   local inputs = {}
-  local pawns = self:getPawns()
+  local pawns = self:getPawnCount()
   getPawnInputs(inputs, self.board, self.color, pawns)
   -- then get all opponent pawns
   for opponent in board:colorIterator() do
