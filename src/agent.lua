@@ -7,6 +7,28 @@ local Agent = {}
 Agent.__index = Agent
 
 --[[--
+  Returns the number of players based on the given network definition
+  @return Number of players  for the given network
+]]
+local function getPlayers(network)
+  assert(Network.isA(network), "Argument #1 must be a network")
+  -- two outputs represent the X and Y coords, remainder of the outputs is pawns
+  local definition = network:getDefinition()
+  return definition:getOutputs() - GENERAL_NODES
+end
+
+--[[--
+  Returns the number of pawns supported by the network
+  @return  Number of pawns for the given network
+]]
+local function getPawns(network)
+  assert(Network.isA(network), "Argument #1 must be a network")
+  -- one set of pawns inputs for each player
+  local definition = network:getDefinition()
+  return definition:getSize(1) / getPlayers(network)
+end
+
+--[[--
   Constructor: creates a new agent
 
   @param data  Board data, should contain a network, and either a score or a board and a color
@@ -15,6 +37,12 @@ Agent.__index = Agent
 function Agent:new(data)
   -- network required
   assert(Network.isA(data.network), "Data must contain a network")
+  -- validate the network works for an agent
+  local players = getPlayers(data.network)
+  assert(players > 0, "Network must have at least 1 player")
+  local pawns = getPawns(data.network)
+  assert(pawns > 0 and pawns % 1 == 0, "Pawns must be an integer greater than 0")
+
   -- start creating agent
   local agent = {network = data.network}
 
@@ -33,12 +61,20 @@ setmetatable(Agent, {__call = Agent.new})
 --[[--
   Creates a network defintion valid for an agent with the given hidden layers
 
-  @param pawns  Number of pawns for each team
-  @param ...    Hidden layers
+  @param data     Table containing three named arguments
+  @param pawns    Number of pawns for each team
+  @param players  Number of teams total
+  @param layers   Hidden layers in the network
   @return  Definition for a network valid for an agent
 ]]
-function Agent.makeDefinition(pawns, ...)
+function Agent.makeDefinition(data)
+  assert(type(data) == "table", "Argument must be a table")
+  local pawns = data.pawns or 4
+  local players = data.players or 2
+  local layers = data.layers or {}
   assert(type(pawns) == "number" and pawns > 0 and pawns % 1 == 0, "Pawns must be a positive integer")
+  assert(type(players) == "number" and players > 0 and players % 1 == 0, "Players must be a positive integer")
+  assert(type(layers) == "table", "Layers must be a table")
 
   -- start with X and Y value nodes
   local outputs = {"Clamp", "Clamp"}
@@ -47,7 +83,7 @@ function Agent.makeDefinition(pawns, ...)
     table.insert(outputs, "Sig")
   end
   -- two inputs per team
-  return Network.Definition(outputs, pawns * 2, ...)
+  return Network.Definition(outputs, pawns * players, table.unpack(layers))
 end
 
 --[[--
@@ -60,12 +96,24 @@ function Agent.isA(agent)
   return getmetatable(agent) == Agent
 end
 
+----------------
+-- Game logic --
+----------------
+
 --[[--
-  Causes the agent to make a single move in the board
+  Gets the number of pawns this agent supports
+  @return  Number of pawns for this agent
 ]]
-function Agent:makeMove()
-  assert(board ~= nil and color ~= nil, "Cannot play with an agent that is not fully initialized")
-  -- TODO implement
+function Agent:getPawns()
+  return getPawns(self.network)
+end
+
+--[[--
+  Gets the number of pawns this agent supports
+  @return  Number of pawns for this agent
+]]
+function Agent:getPlayers()
+  return getPlayers(self.network)
 end
 
 --[[--
@@ -76,7 +124,14 @@ end
 function Agent:setBoard(board, color)
   assert(Board.isA(board), "Argument #1 must be a Board")
   assert(Color.isA(color), "Argument #2 must be a Color")
-
+  -- validate the board
+  assert(board:getColorCount() == self:getPlayers(), "Board does not have the right number of players for this network")
+  local pawns = self:getPawns()
+  assert(board:getPawnCount(color) > 0, "Board must have at least one pawn in that color")
+  for boardColor in board:colorIterator() do
+    assert(board:getPawnCount(boardColor) == pawns, "Invalid pawn count for colors")
+  end
+  -- finally, set the property
   self.board = board
   self.color = color
 end

@@ -118,8 +118,8 @@ end
   @return pawn at index and color
 ]]
 function Board:getPawn(color, index)
-  assert(type(index) == "number", "Argument #1 must be a number")
-  assert(Color.isA(color), "Argument #2 must be a color")
+  assert(Color.isA(color), "Argument #1 must be a color")
+  assert(type(index) == "number", "Argument #2 must be a number")
   local pawns = self.teamPawns[color]
   if pawns == nil then
     return nil
@@ -170,6 +170,18 @@ function Board:getOpponents(color)
     end
   end
   return colors
+end
+
+--[[--
+  Gets an iterator for the list of colors in the board
+  @return  Color iterator function with one return for the color
+]]
+function Board:colorIterator()
+  local c = 0
+  return function()
+    c = c + 1
+    return self.colors[c]
+  end
 end
 
 --[[--

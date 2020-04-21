@@ -24,6 +24,19 @@ function Network.isA(network)
   return getmetatable(network) == Network
 end
 
+----------------------
+-- Instance methods --
+----------------------
+
+--[[--
+  Gets the definition for this network
+
+  @return Network's definition
+]]
+function Network:getDefinition()
+  return self.definition
+end
+
 --[[--
   Gets the value for a layer of nodes and the given input
   @param layer  Layer of nodes
@@ -210,6 +223,15 @@ function Definition:getSize(index)
   local layer = self.layers[index]
   assert(layer ~= nil, "Layer does not exist")
   return layer
+end
+
+--[[--
+  Returns the number of outputs for this network definition
+
+  @return  Outputs for this network definition
+]]
+function Definition:getOutputs()
+  return #self.outputs
 end
 
 --[[--
