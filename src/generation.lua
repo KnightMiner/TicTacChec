@@ -172,7 +172,7 @@ function Generation:reproduce(count, mutationChance)
     -- Breed the two agents and insert them into the table of new agents
     table.insert(newAgents, agent1:breed(agent2, mutationChance))
   end
-  return Generation:new(newAgents)
+  return Generation:new(self.definition, newAgents)
 end
 
 --[[--
