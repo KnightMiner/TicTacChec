@@ -145,7 +145,7 @@ local function getLinedUp(board, color)
           -- For loop checks horizontal and then vertical, save line direction
           if i == 1 then
             lineDir = HORIZONTAL
-          else if i == 2 then
+          elseif i == 2 then
             lineDir = VERTICAL
           end
       end
@@ -181,7 +181,7 @@ local function getLinedUp(board, color)
         -- 2 is to offset for horizontal and vertical
         if i == 1 then
           lineDir = PDIAGONAL
-        else if i == 2 then
+        elseif i == 2 then
           lineDir = NDIAGONAL
         end
     end
