@@ -431,6 +431,9 @@ function Agent:calcScore()
     self.score = self.score - (6 * (line*8 + count))
   end
 
+  -- 0 is the min score
+  self.score = math.max(self.score, 0)
+
   return self.score
 end
 
@@ -465,7 +468,7 @@ end
 function Agent:breed(mate, mutation)
   assert(Agent.isA(mate), "Argument #1 must be an Agent")
   assert(type(mutation) == "number" and mutation >= 0 and mutation <= 1, "Argument #2 must be a number between 0 and 1")
-  return self.network:breed(mate.network, self:getReplacement(mate), mutation)
+  return Agent:new{network = self.network:breed(mate.network, self:getReplacement(mate), mutation)}
 end
 
 --[[--
