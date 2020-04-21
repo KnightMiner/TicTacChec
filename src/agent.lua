@@ -85,6 +85,15 @@ end
 -- Breeding --
 --------------
 
+-- Line with points is horizontal
+local HORIZONTAL = 1
+-- Line with points is vertical
+local VERTICAL = 2
+-- Line with points is diagonal from top left to bottom right
+local PDIAGONAL = 3
+-- Line with points is diagonal from bottom left to top right
+local NDIAGONAL = 4
+
 --[[--
   Gets the largest line count for the color
 
@@ -133,8 +142,12 @@ local function getLinedUp(board, color)
       -- If line has 3, then save the point if needed for blocked score
       if check == 3 then
           missingPoint = tempMissingPoint
-          -- For loop checks horizontal and then vertical, save index for line Direction
-          lineDir = i
+          -- For loop checks horizontal and then vertical, save line direction
+          if i == 1 then
+            lineDir = HORIZONTAL
+          else if i == 2 then
+            lineDir = VERTICAL
+          end
       end
     end
   end
@@ -166,7 +179,11 @@ local function getLinedUp(board, color)
         missingPoint = tempMissingPoint
         -- For loop checks positive diagonal then negative diagonal
         -- 2 is to offset for horizontal and vertical
-        lineDir = 2 + i
+        if i == 1 then
+          lineDir = PDIAGONAL
+        else if i == 2 then
+          lineDir = NDIAGONAL
+        end
     end
   end
   return linedUp, missingPoint, lineDir
@@ -197,10 +214,10 @@ local function getBlockedScore(board, color)
     local tempScore = 0
     if pawn:getValidMoves():contains(point) then
       local pawnPosition = pawn:getSpace()
-      if (dir == 1 and pawnPosition.x == point.x) or
-         (dir == 2 and pawnPosition.y == point.y) or
-         (dir == 3 and pawnPosition.x == pawnPosition.y) or
-         (dir == 4 and pawnPosition.x == (3 - pawnPosition.y)) then
+      if (dir == HORIZONTAL and pawnPosition.x == point.x) or
+         (dir == VERTICAL and pawnPosition.y == point.y) or
+         (dir == PDIAGONAL and pawnPosition.x == pawnPosition.y) or
+         (dir == NDIAGONAL and pawnPosition.x == (3 - pawnPosition.y)) then
            -- if it can be captured by a piece in the line, worth 1
         tempScore = 1
       else
