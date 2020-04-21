@@ -1,14 +1,25 @@
 local Agent = require("agent")
 local Board = require("board")
 local Network = require("network")
+local Color = require("color")
 
 --- Path to generation save files
 local SAVE_PATH = "../generations/"
 local EXTENSION = ".gen"
+-- Pawn types for the board
+local TYPES = {
+  require("pawnTypes/rook")
+  require("pawnTypes/pawn")
+  require("pawnTypes/bishop")
+  require("pawnTypes/knight")
+}
 
 --- Index table, called Generation for conveience of adding functions
 local Generation = {}
 Generation.__index = Generation
+
+-- ensure a seed is set
+math.randomseed(os.time())
 
 --[[--
   Constructor: creates a new generation. Localized rather than global to restrict
@@ -100,18 +111,41 @@ end
   @return agent with the highest score
 ]]
 function Generation:getBestAgent()
-  -- TODO
+  -- holds maximum score
+  local curMax = 0
+  -- holds best agent to be returned
+  local bestAgent
+  for _, agent in ipairs(self.agents) do
+    local agentScore = agent:getScore()
+    if curMax < agentScore then
+      curMax = agentScore
+      bestAgent = agent
+    end
+  end
+  return bestAgent
 end
 
 --[[--
   Gets a random agent from the generation, based on the agent scores
 
-  @param self  Generation instance
+  @param self       Generation instance
+  @param totalScore sum of all the agents scores
   @return a random agent
 ]]
-local function getRandomAgent(self)
-  -- TODO
-  -- consider a second parameter to cache score relationship
+local function getRandomAgent(self, totalScore)
+  -- Holds sum of agents as they are iterated through to find the randomly selected agent
+  local compiledScore = 0
+
+  -- Find score of random agent
+  local targetScore = math.random() * totalScore
+  -- Find which agents range has the targetScore
+  for _, agent in ipairs(self.agents) do
+    compiledScore = compiledScore + agent:getScore()
+    if compiledScore >= targetScore then
+      return agent
+    end
+  end
+  error("There was no random agent selected")
 end
 
 --[[--
@@ -123,15 +157,38 @@ end
 ]]
 function Generation:reproduce(count, mutationChance)
   assert(type(count) == "number" and count % 2 == 0, "Count must be an even integer")
-  -- TODO
-  -- ...
-  -- return Generation:new(agents)
+  -- table to hold agents as they are created
+  local newAgents = {}
+  -- Holds sum of all the agents scores
+  local totalScore = 0
+
+  for _, agent in ipairs(self.agents) do
+    totalScore = totalScore + agent:getScore()
+  end
+  for i = 1, count do
+    -- get two random agents for breeding
+    local agent1 = getRandomAgent(self, totalScore)
+    local agent2 = getRandomAgent(self, totalScore)
+    -- Breed the two agents and insert them into the table of new agents
+    table.insert(newAgents, agent1:breed(agent2, mutationChance))
+  end
+  return Generation:new(newAgents)
 end
 
 --[[--
   Creates a standard game board for a game
+
+  @param size   Size of the board
+  @return new board instance
 ]]
-local function makeBoard()
+local function makeBoard(size)
+  local board = Board(size)
+
+  for _, type in ipairs(types) do
+    board:addPawn(Pawn(type, Color.WHITE))
+    board:addPawn(Pawn(type, Color.BLACK))
+  end
+  return board
 end
 
 --[[--
@@ -143,7 +200,26 @@ end
   @return winning agent
 ]]
 local function playGame(agent1, agent2, moves)
-  -- TODO
+  assert(agent1:getPawnCount() == agent2:getPawnCount(), "Agents must have the same number of pawns")
+  assert(agent1:getPlayers() == agent2:getPlayers(), "Agents must have the same number of players")
+  local currentMove = 1
+  local gameBoard = Board(agent1:getPawnCount())
+
+  agent1:setBoard(gameBoard, Color.WHITE)
+  agent2:setBoard(gameBoard, Color.BLACK)
+  while currentMove <= moves do
+    agent1:makeMove()
+    -- Check for win and return if won
+    if gameBoard:getWinner() ~= nil then
+      return agent1
+    agent2:makeMove()
+    -- Check for win and return if won
+    if gameBoard:getWinner() ~= nil then
+      return agent2
+    currentMove = currentMove + 1
+  end
+  -- If tie, return nil
+  return nil
 end
 
 --[[--
@@ -152,8 +228,22 @@ end
   @param games  Number of games for each agent to play
   @param moves  Number of moves to play in each game
 ]]
-function Generation:score(games, moves)
-  -- TODO
+function Generation:playGames(games, moves)
+  -- TODO Multiple games will erase the previous score
+  for i = 1, games do
+    -- table to hold shuffled agents
+    local shuffled = {}
+    for _, agent in ipairs(self.agents) do
+      -- Find random position
+      local pos = math.random(1, #shuffled + 1)
+      -- insert agent at random position
+      table.insert(shuffled, pos, agent)
+    end
+    for i = 1, #shuffled, 2 do
+      -- Take agents by twos and play a game
+      playGame(shuffled[i], shuffled[i+1], moves)
+    end
+  end
 end
 
 --[[--
