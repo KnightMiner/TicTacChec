@@ -166,7 +166,7 @@ function Pawn:addTo(point)
   end
   -- move the pawn and check win
   self.space = point
-  self.board:incrementMoves()
+  self.board:makeMove(self)
   self.board:checkWin(self)
   return self.board
 end
@@ -189,8 +189,9 @@ function Pawn:moveTo(point)
     current.space = nil
   end
   -- move the pawn and check win
+  local oldSpace = self.space
   self.space = point
-  self.board:incrementMoves()
+  self.board:makeMove(self, oldSpace)
   self.board:checkWin(self)
   return self.board
 end

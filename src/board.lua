@@ -212,8 +212,22 @@ end
 --[[--
   Call when making a move to increment the move count
 ]]
-function Board:incrementMoves()
+function Board:makeMove(pawn, from)
+  assert(Pawn.isA(pawn), "Argument #1 must be a pawn")
+  assert(from == nil or Point.isA(from), "Argument #2 must be a point")
+  assert(pawn:getSpace() ~= nil, "Pawn must be on the board")
   self.moves = self.moves + 1
+
+  -- update message
+  local name = tostring(pawn)
+  local space = pawn:getSpace()
+  -- placing
+  if from == nil then
+    self.message = string.format("Placed %s at %d,%d", name, space.x, space.y)
+  else
+    -- moving
+    self.message = string.format("Moved %s from %d,%d to %d,%d", name, from.x, from.y, space.x, space.y)
+  end
 end
 
 --[[--
@@ -362,6 +376,10 @@ function Board:__tostring()
     table.insert(out, table.concat(line, "|"))
   end
 
+  -- add status message
+  if self.message then
+    table.insert(out, self.message)
+  end
   -- add winner if won
   if self.winner then
     table.insert(out, "Winner: " .. self.winner:getName())
