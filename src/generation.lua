@@ -137,6 +137,11 @@ end
   @return a random agent
 ]]
 local function getRandomAgent(self, totalScore)
+  -- if every game scored badly, just randomly choose an agent
+  if totalScore == 0 then
+    return self.agents[math.random(#self.agents)]
+  end
+
   -- Holds sum of agents as they are iterated through to find the randomly selected agent
   local compiledScore = 0
 
@@ -167,10 +172,10 @@ function Generation:reproduce(count, mutationChance)
   local newAgents = {}
   -- Holds sum of all the agents scores
   local totalScore = 0
-
   for _, agent in ipairs(self.agents) do
-    totalScore = totalScore + agent:getScore()
+    totalScore = totalScore + (agent:calcScore() or 0)
   end
+
   for i = 1, count do
     -- get two random agents for breeding
     local agent1 = getRandomAgent(self, totalScore)
