@@ -8,10 +8,10 @@ local SAVE_PATH = "../generations/"
 local EXTENSION = ".gen"
 -- Pawn types for the board
 local TYPES = {
-  require("pawnTypes/rook")
-  require("pawnTypes/pawn")
-  require("pawnTypes/bishop")
-  require("pawnTypes/knight")
+  require("pawnTypes/rook"),
+  require("pawnTypes/pawn"),
+  require("pawnTypes/bishop"),
+  require("pawnTypes/knight"),
 }
 
 --- Index table, called Generation for conveience of adding functions
@@ -212,10 +212,12 @@ local function playGame(agent1, agent2, moves)
     -- Check for win and return if won
     if gameBoard:getWinner() ~= nil then
       return agent1
+    end
     agent2:makeMove()
     -- Check for win and return if won
     if gameBoard:getWinner() ~= nil then
       return agent2
+    end
     currentMove = currentMove + 1
   end
   -- If tie, return nil
