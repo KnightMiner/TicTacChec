@@ -147,6 +147,7 @@ function Pawn:setSpace(point)
 
   -- move self
   self.space = point
+  self.board:makeMove(self)
 end
 
 --[[--

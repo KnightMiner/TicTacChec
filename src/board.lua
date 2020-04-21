@@ -20,7 +20,8 @@ function Board:new(size)
     pawns = {},
     teamPawns = {},
     moves = 0,
-    colors = {}
+    colors = {},
+    pawnSpaces = {}
   }, self)
 end
 
@@ -102,12 +103,7 @@ end
 function Board:isPawnAt(point)
   assert(Point.isA(point), "Argument must be instance of point")
   -- return the first found pawn
-  for _, pawn in ipairs(self.pawns) do
-    if pawn:getSpace() == point then
-      return true
-    end
-  end
-  return false
+  return self.pawnSpaces[point:getIndex(self.size)] and true
 end
 
 --[[--
@@ -135,13 +131,8 @@ end
 ]]
 function Board:getPawnAt(point)
   assert(Point.isA(point), "Argument must be instance of point")
-  -- return the first found pawn
-  for _, pawn in ipairs(self.pawns) do
-    if pawn:getSpace() == point then
-      return pawn
-    end
-  end
-  return nil
+  -- fetch from the space map
+  return self.pawnSpaces[point:getIndex(self.size)]
 end
 
 --[[--
@@ -216,7 +207,15 @@ function Board:makeMove(pawn, from)
   assert(Pawn.isA(pawn), "Argument #1 must be a pawn")
   assert(from == nil or Point.isA(from), "Argument #2 must be a point")
   assert(pawn:getSpace() ~= nil, "Pawn must be on the board")
+
+  -- increment moves made
   self.moves = self.moves + 1
+
+  -- update pawn space on board
+  if from ~= nil then
+    self.pawnSpaces[from:getIndex(self.size)] = nil
+  end
+  self.pawnSpaces[pawn:getSpace():getIndex(self.size)] = pawn
 
   -- update message
   local name = tostring(pawn)
