@@ -51,6 +51,7 @@ end
   @return  Generation instance
 ]]
 function Generation.generate(definition, count)
+  assert(filename ~= Generation, "Generation.generate must be called statically")
   assert(Network.Definition.isA(definition), "Invalid network definition")
   assert(type(count) == "number" and count % 2 == 0, "Count must be an even integer")
   -- generate a new agent for the count
@@ -79,6 +80,9 @@ end
   @return New generation instance
 ]]
 function Generation.read(filename)
+  assert(filename ~= Generation, "Generation.read must be called statically")
+  assert(type(filename) == "string", "Argument #1 must be a string")
+
   -- load the file
   _G.Network = Network
   local data = dofile(SAVE_PATH .. filename .. EXTENSION)
@@ -157,6 +161,8 @@ end
 ]]
 function Generation:reproduce(count, mutationChance)
   assert(type(count) == "number" and count % 2 == 0, "Count must be an even integer")
+  assert(type(mutationChance) == "number" and mutationChance >= 0 and mutationChance <= 1, "Mutation chance must be a number between 0 and 1")
+
   -- table to hold agents as they are created
   local newAgents = {}
   -- Holds sum of all the agents scores
@@ -182,6 +188,8 @@ end
   @return new board instance
 ]]
 local function makeBoard(size)
+  assert(type(size) == "number" and size > 0 and size % 1 == 0, "Size must be a positive integer")
+
   local board = Board(size)
 
   for _, type in ipairs(TYPES) do
@@ -200,14 +208,19 @@ end
   @return winning agent
 ]]
 local function playGame(agent1, agent2, moves)
-  assert(agent1:getPawnCount() == agent2:getPawnCount(), "Agents must have the same number of pawns")
+  assert(Agent.isA(agent1), "Argument #1 must be an agent")
+  assert(Agent.isA(agent2), "Argument #2 must be an agent")
+  assert(type(moves) == "number" and moves > 0 and moves % 1 == 0, "Argument #3 must be a positive integer")
+  local pawnCount = agent1:getPawnCount()
+  assert(pawnCount == agent2:getPawnCount(), "Agents must have the same number of pawns")
   assert(agent1:getPlayerCount() == agent2:getPlayerCount(), "Agents must have the same number of players")
-  local currentMove = 1
-  local gameBoard = makeBoard(agent1:getPawnCount())
 
+  -- create a new board for the agents to play
+  local gameBoard = makeBoard(pawnCount)
   agent1:setBoard(gameBoard, Color.WHITE)
   agent2:setBoard(gameBoard, Color.BLACK)
-  while currentMove <= moves do
+  -- play for the given number of moves
+  for currentMove = 1, moves do
     agent1:makeMove()
     -- Check for win and return if won
     if gameBoard:getWinner() ~= nil then
@@ -218,7 +231,6 @@ local function playGame(agent1, agent2, moves)
     if gameBoard:getWinner() ~= nil then
       return agent2
     end
-    currentMove = currentMove + 1
   end
   -- If tie, return nil
   return nil
@@ -231,6 +243,9 @@ end
   @param moves  Number of moves to play in each game
 ]]
 function Generation:playGames(games, moves)
+  assert(type(games) == "number" and games > 0 and games % 1 == 0, "Games must be a positive integer")
+  assert(type(moves) == "number" and moves > 0 and moves % 1 == 0, "Moves must be a positive integer")
+
   -- TODO Multiple games will erase the previous score
   for i = 1, games do
     -- table to hold shuffled agents
@@ -256,14 +271,16 @@ end
 ]]
 function Generation:write(filename)
   assert(self ~= Generation, "Cannot call write statically")
+  assert(type(filename) == "string", "Filename must be a string")
+  -- beginning of the file with the definition
   local output = {"return {\n  definition=", tostring(self.definition), ",\n  agents={\n"}
+  -- write each agent
   for _, agent in ipairs(self.agents) do
     table.insert(output, "    ")
     table.insert(output, agent:save(true))
     table.insert(output, ",\n")
   end
   table.insert(output, "  }\n}")
-
   -- create the file
   local file = io.open(SAVE_PATH .. filename .. EXTENSION, "w")
   file:write(table.concat(output))
