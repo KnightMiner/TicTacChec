@@ -248,12 +248,14 @@ local NDIAGONAL = 4
   @param board  Board instance
   @param color  Color to check for a line
   @return between 0 and 4 based on number of pieces in a line
+  @return number of times lines of this size were seen
   @return point if line is of length 3, this returns the point that is missing
   @return direction of line if line has length of 3
 ]]
 local function getLinedUp(board, color)
   -- Holds current highest number of pawns in a line
   local linedUp = 0
+  local lineCount = 0
   -- holds missing point from a line of 3
   local missingPoint = nil
   -- holds direction of line (1: horizontal, 2: vertical, 3: positive diagonal, 4: negative diagonal)
@@ -286,6 +288,9 @@ local function getLinedUp(board, color)
       -- If current line has more than current max, replace it
       if check > linedUp then
           linedUp = check
+          lineCount = 1
+      elseif check == linedUp then
+          lineCount = lineCount + 1
       end
       -- If line has 3, then save the point if needed for blocked score
       if check == 3 then
@@ -321,6 +326,9 @@ local function getLinedUp(board, color)
     -- If current line has more than current max, replace it
     if check > linedUp then
         linedUp = check
+        lineCount = 1
+    elseif check == linedUp then
+        lineCount = lineCount + 1
     end
     -- If line has 3, then save the point if needed for blocked score
     if check == 3 then
@@ -334,7 +342,8 @@ local function getLinedUp(board, color)
         end
     end
   end
-  return linedUp, missingPoint, lineDir
+
+  return linedUp, lineCount, missingPoint, lineDir
 end
 
 --[[--
@@ -346,35 +355,33 @@ end
 ]]
 local function getBlockedScore(board, color)
   -- find our pieces, getLinedUp(board, color)
-  local linedUp, point, dir = getLinedUp(board, color)
+  local linedUp, _, point, dir = getLinedUp(board, color)
   -- max score is two and gets reduced as better options are found
   local score = 2
   -- 0 if no lines of 3
-  if linedUp < 3 then
-    return 0
+  local maxCoord = board:getSize() - 1
+  if linedUp < maxCoord then
+    return 20
   end
-  -- 0 if no pawn at the point
-  if not board:isPawnAt(point) then
-    return 0
-  end
+  -- try to move each pawn to the point
   for i = 1, board:getPawnCount(color) do
     local pawn = board:getPawn(color, i)
     local tempScore = 0
     if pawn:getValidMoves():contains(point) then
       local pawnPosition = pawn:getSpace()
+      -- if it can be captured by/moved to by a piece in the line, worth 1
       if (dir == HORIZONTAL and pawnPosition.x == point.x) or
          (dir == VERTICAL and pawnPosition.y == point.y) or
          (dir == PDIAGONAL and pawnPosition.x == pawnPosition.y) or
-         (dir == NDIAGONAL and pawnPosition.x == (3 - pawnPosition.y)) then
-           -- if it can be captured by a piece in the line, worth 1
-        tempScore = 1
+         (dir == NDIAGONAL and pawnPosition.x == (maxCoord - pawnPosition.y)) then
+        tempScore = 5
       else
-        -- if it can be captured by a piece not in the line, worth 0
+        -- if it can be captured by/moved to a piece not in the line, worth 0
         tempScore = 0
       end
     else
       -- if it cannot be captured, worth 2
-      tempScore = 2
+      tempScore = 20
     end
     score = math.min(score, tempScore)
   end
@@ -403,16 +410,25 @@ function Agent:calcScore()
     return nil
   end
 
-  -- TODO: weights
-  self.score
-    = getLinedUp(self.board, self.color)
-    + getBlockingScore(self.board, self.color)
-    - getBlockedScore(self.board, self.color)
-    - self.board:getMoveCount()
+  local line, count = getLinedUp(self.board, self.color)
+  local blocking = getBlockingScore(self.board, self.color)
+  local blocked = getBlockedScore(self.board, self.color)
+  -- print("Lined up: " .. line)
+  -- print("Line count: " .. count)
+  -- print("Blocking: " .. blocking)
+  -- print("Blocked: " .. blocked)
+
+  -- most important is having a line, multiples secondary
+  -- next is our line not being blocked, then blocking the opponent
+  -- minimal is a short game
+  self.score = (10 * (line*8 + count)) - (2*blocking) + blocked - (self.board:getMoveCount() / 2)
 
   for _, opponents in ipairs(board:getOpponents(self.color)) do
-    -- TODO: weight
-    self.score = self.score - getLinedUp(self.board, opponents)
+    -- worth more than blocking
+    local opLine, opCount = getLinedUp(self.board, self.color)
+    -- print("Opponent lined up: " .. opLine)
+    -- print("Opponent lined count: " .. opCount)
+    self.score = self.score - (6 * (line*8 + count))
   end
 
   return self.score
