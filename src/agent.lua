@@ -1,6 +1,18 @@
 local Board = require("board")
 local Color = require("color")
 local Network = require("network")
+local Point = require("point")
+
+--- Index of the X value node
+local X_INDEX = 1
+--- Index of the Y value node
+local Y_INDEX = 2
+--- Number of nodes before the pawn nodes
+local GENERAL_NODES = 2
+--- Number of nodes before the pawn nodes
+local PAWN_OFFSET = GENERAL_NODES - 1
+--- If within this distance, two points match and fallback to pawn logic
+local MATCHING = 0.1
 
 --- Index table, called Board for conveience of adding functions
 local Agent = {}
@@ -10,7 +22,7 @@ Agent.__index = Agent
   Returns the number of players based on the given network definition
   @return Number of players  for the given network
 ]]
-local function getPlayers(network)
+local function getPawns(network)
   assert(Network.isA(network), "Argument #1 must be a network")
   -- two outputs represent the X and Y coords, remainder of the outputs is pawns
   local definition = network:getDefinition()
@@ -21,11 +33,11 @@ end
   Returns the number of pawns supported by the network
   @return  Number of pawns for the given network
 ]]
-local function getPawns(network)
+local function getPlayers(network)
   assert(Network.isA(network), "Argument #1 must be a network")
   -- one set of pawns inputs for each player
   local definition = network:getDefinition()
-  return definition:getSize(1) / getPlayers(network)
+  return math.floor(definition:getSize(1) / getPawns(network))
 end
 
 --[[--
@@ -134,6 +146,87 @@ function Agent:setBoard(board, color)
   -- finally, set the property
   self.board = board
   self.color = color
+end
+
+--[[--
+  Gets the input indexes for a pawn color
+
+  @param inputs   Array to place indexes into
+  @param board    Game board containing pieces
+  @param color    Color to check on the board
+  @param pawns    Pawn count in the board
+]]
+local function getPawnInputs(inputs, board, color, pawns)
+  local size = board:getSize()
+  for index = 1, pawns do
+    local pawn = board:getPawn(color, index)
+    assert(pawn ~= nil, "Pawn at index is nil")
+    -- calling statically as space may be nil (off board)
+    table.insert(inputs, Point.getIndex(pawn:getSpace(), size))
+  end
+end
+
+--[[--
+  Causes the agent to make a single move in the board
+
+  @return board if we made a move, nil otherwise
+]]
+function Agent:makeMove()
+  assert(self.board ~= nil and self.color ~= nil, "Must set agent board before getting moves")
+  -- out pawns go first as inputs
+  local inputs = {}
+  local pawns = self:getPawns()
+  getPawnInputs(inputs, self.board, self.color, pawns)
+  -- then get all opponent pawns
+  for opponent in board:colorIterator() do
+    -- skip own pawn colors
+    if opponent ~= self.color then
+      getPawnInputs(inputs, self.board, opponent, pawns)
+    end
+  end
+  assert(#inputs == self.network:getDefinition():getSize(1), "Invalid input count for network")
+
+  -- get results
+  local outputs = self.network:getOutput(inputs)
+  local size = self.board:getSize()
+  local x = outputs[X_INDEX] * size - 0.5
+  local y = outputs[Y_INDEX] * size - 0.5
+
+  -- find the best pawn to move
+  local moveIndex = nil
+  local moveSpace = nil
+  local minDistance = size * 2
+  for index = 1, pawns do
+    local moves = self.board:getPawn(self.color, index):getValidMoves()
+    local move = moves:findClosest(x, y)
+    if move ~= nil then
+      local distance = math.sqrt((x - move.x)^2 + (y - move.y)^2)
+      -- if within MATCHING, choose the higher output node
+      -- if outside MATCHING, choose the larget distance
+      local diff = minDistance - distance
+      local useMove = false
+      if math.abs(diff) < MATCHING then
+        if outputs[PAWN_OFFSET+moveIndex] < outputs[PAWN_OFFSET+index] then
+          useMove = true
+        end
+      elseif diff > 0 then
+        useMove = true
+      end
+      -- if either case, update the variables
+      if useMove then
+        moveIndex = index
+        moveSpace = move
+        minDistance = distance
+      end
+    end
+  end
+  -- make the move if we found one
+  if moveIndex ~= nil and moveSpace ~= nil then
+    self.board:getPawn(self.color, moveIndex):moveOrAddTo(moveSpace)
+    return self.board
+  end
+  -- false means no move found
+  return nil
 end
 
 --------------

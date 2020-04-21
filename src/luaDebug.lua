@@ -27,7 +27,9 @@ white = {}
 black = {}
 
 -- add all pawns to the board
+local count = 0
 for key, type in pairs(types) do
+  count = count + 1
   if type == true then
     type = require("pawnTypes/" .. key)
   end
@@ -36,6 +38,13 @@ for key, type in pairs(types) do
   board:addPawn(white[key])
   board:addPawn(black[key])
 end
+
+-- set up network stuff
+def = Agent.makeDefinition{players = 2, pawns = count, layers = {6}}
+white.agent = Agent{network = def:generate()}
+white.agent:setBoard(board, Color.WHITE)
+black.agent = Agent{network = def:generate()}
+black.agent:setBoard(board, Color.BLACK)
 
 -- print the board to start
 print(board)
