@@ -409,30 +409,35 @@ end
 
   @return  Score for this game between 0 and 1
 ]]
-function Agent:calcScore()
+function Agent:calcScore(debug)
   -- if no board, do nothing
   if not self.board or not self.color then
     return nil
   end
 
   local line, count = getLinedUp(self.board, self.color)
-  local blocking = getBlockingScore(self.board, self.color)
   local blocked = getBlockedScore(self.board, self.color)
-  -- print("Lined up: " .. line)
-  -- print("Line count: " .. count)
-  -- print("Blocking: " .. blocking)
-  -- print("Blocked: " .. blocked)
+  local blocking = getBlockingScore(self.board, self.color)
+  if debug then
+    print("Lined up: " .. line)
+    print("Line count: " .. count)
+    print("Blocked: " .. blocked)
+    print("Blocking: " .. blocking)
+  end
 
   -- most important is having a line, multiples secondary
   -- next is our line not being blocked, then blocking the opponent
   -- minimal is a short game
-  self.score = (10 * (line*8 + count)) - (2*blocking) + blocked - (self.board:getMoveCount() / 2)
+  self.score = (10 * (line*8 + count)) - (2*blocked) + blocking - (self.board:getMoveCount() / 2)
 
   for _, opponents in ipairs(board:getOpponents(self.color)) do
     -- worth more than blocking
     local opLine, opCount = getLinedUp(self.board, self.color)
-    -- print("Opponent lined up: " .. opLine)
-    -- print("Opponent lined count: " .. opCount)
+
+    if debug then
+      print("Opponent lined up: " .. opLine)
+      print("Opponent lined count: " .. opCount)
+    end
     self.score = self.score - (6 * (line*8 + count))
   end
 
