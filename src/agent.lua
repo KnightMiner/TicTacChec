@@ -47,7 +47,6 @@ end
   @return  Board object
 ]]
 function Agent:new(data)
-  -- network required
   assert(Network.isA(data.network), "Data must contain a network")
   -- validate the network works for an agent
   local players = getPlayerCount(data.network)
@@ -293,7 +292,7 @@ local function getLinedUp(board, color)
           lineCount = lineCount + 1
       end
       -- If line has 3, then save the point if needed for blocked score
-      if check == 3 then
+      if check == maxCoord then
           missingPoint = tempMissingPoint
           -- For loop checks horizontal and then vertical, save line direction
           if i == 1 then
@@ -331,7 +330,7 @@ local function getLinedUp(board, color)
         lineCount = lineCount + 1
     end
     -- If line has 3, then save the point if needed for blocked score
-    if check == 3 then
+    if check == maxCoord then
         missingPoint = tempMissingPoint
         -- For loop checks positive diagonal then negative diagonal
         -- 2 is to offset for horizontal and vertical
@@ -356,13 +355,18 @@ end
 local function getBlockedScore(board, color)
   -- find our pieces, getLinedUp(board, color)
   local linedUp, _, point, dir = getLinedUp(board, color)
-  -- max score is two and gets reduced as better options are found
-  local score = 2
-  -- 0 if no lines of 3
-  local maxCoord = board:getSize() - 1
+  -- line of 4 won
+  local size = board:getSize()
+  if linedUp == size then
+    return 0
+  end
+  -- no line of 3 means its just okay
+  local maxCoord = size - 1
   if linedUp < maxCoord then
     return 20
   end
+  -- max score is two and gets reduced as better options are found
+  local score = 20
   -- try to move each pawn to the point
   for i = 1, board:getPawnCount(color) do
     local pawn = board:getPawn(color, i)
@@ -370,10 +374,11 @@ local function getBlockedScore(board, color)
     if pawn:getValidMoves():contains(point) then
       local pawnPosition = pawn:getSpace()
       -- if it can be captured by/moved to by a piece in the line, worth 1
-      if (dir == HORIZONTAL and pawnPosition.x == point.x) or
+      if pawnPosition ~= nil and
+         ((dir == HORIZONTAL and pawnPosition.x == point.x) or
          (dir == VERTICAL and pawnPosition.y == point.y) or
          (dir == PDIAGONAL and pawnPosition.x == pawnPosition.y) or
-         (dir == NDIAGONAL and pawnPosition.x == (maxCoord - pawnPosition.y)) then
+         (dir == NDIAGONAL and pawnPosition.x == (maxCoord - pawnPosition.y))) then
         tempScore = 5
       else
         -- if it can be captured by/moved to a piece not in the line, worth 0
