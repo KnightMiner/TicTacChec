@@ -432,7 +432,7 @@ function Agent:calcScore(debug)
 
   for _, opponents in ipairs(board:getOpponents(self.color)) do
     -- worth more than blocking
-    local opLine, opCount = getLinedUp(self.board, self.color)
+    local opLine, opCount = getLinedUp(self.board, opponents)
 
     if debug then
       print("Opponent lined up: " .. opLine)
