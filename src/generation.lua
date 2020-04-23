@@ -158,6 +158,27 @@ local function getRandomAgent(self, totalScore)
 end
 
 --[[--
+  Gets the total score for this network
+
+  @param self  Network to check
+  @return  Total score for the network
+]]
+local function getTotalScore(self)
+  local totalScore = 0
+  for _, agent in ipairs(self.agents) do
+    totalScore = totalScore + (agent:calcScore() or 0)
+  end
+  return totalScore
+end
+
+--[[--
+  Returns the aev
+]]
+function Generation:getAverageScore()
+  return getTotalScore(self) / #self.agents
+end
+
+--[[--
   Generates a child generation from this generation
 
   @param count           Number of children to produce
@@ -171,11 +192,7 @@ function Generation:reproduce(count, mutationChance)
   -- table to hold agents as they are created
   local newAgents = {}
   -- Holds sum of all the agents scores
-  local totalScore = 0
-  for _, agent in ipairs(self.agents) do
-    totalScore = totalScore + (agent:calcScore() or 0)
-  end
-
+  local totalScore = getTotalScore(self)
   for i = 1, count do
     -- get two random agents for breeding
     local agent1 = getRandomAgent(self, totalScore)
