@@ -183,17 +183,33 @@ end
 
   @param count           Number of children to produce
   @param mutationChance  Chance of mutation per weight when agents breed
+  @param clones          Number of the best to clone from this generation
   @return New Generation instance
 ]]
-function Generation:reproduce(count, mutationChance)
-  assert(type(count) == "number" and count % 2 == 0, "Count must be an even integer")
+function Generation:reproduce(count, mutationChance, clones)
+  clones = clones or 0
+  assert(type(count) == "number" and count > 0 and count % 2 == 0, "Count must be an even, positive integer")
   assert(type(mutationChance) == "number" and mutationChance >= 0 and mutationChance <= 1, "Mutation chance must be a number between 0 and 1")
-
+  assert(type(clones) == "number" and clones >= 0, "Clones must be a non-negative integer")
   -- table to hold agents as they are created
   local newAgents = {}
+
+  -- copy the best X clones into the next generation
+  if clones > 0 then
+    -- sort the list of agents to get the best
+    local bestAgents = {}
+    for i, agent in ipairs(self.agents) do bestAgents[i] = agent end
+    table.sort(bestAgents, function(a, b)
+      return a:getAverageScore() > b:getAverageScore()
+    end)
+    for i = 1, clones do
+      table.insert(newAgents, bestAgents[i]:clone())
+    end
+  end
+
   -- Holds sum of all the agents scores
   local totalScore = getTotalScore(self)
-  for i = 1, count do
+  for i = 1, (count - clones) do
     -- get two random agents for breeding
     local agent1 = getRandomAgent(self, totalScore)
     local agent2 = getRandomAgent(self, totalScore)

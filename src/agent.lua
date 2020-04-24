@@ -508,6 +508,13 @@ function Agent:breed(mate, mutation)
 end
 
 --[[--
+  Creates a copy of the agent with the same network, but new scores
+]]
+function Agent:clone()
+  return Agent:new{network = self.network}
+end
+
+--[[--
   Checks if the agent uses the given network definition
   @param defintion  Definition to check
   @return true if the definition is used
