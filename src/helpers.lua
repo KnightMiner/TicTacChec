@@ -13,8 +13,14 @@ local helpers = {}
 function helpers.addPoint(pawn, moves, point)
   assert(type(moves) == "table", "Argument #2 must be a table")
   assert(Point.isA(point), "Argument #3 must be a point")
+  -- ensure space is valid
+  local board = pawn:getBoard()
+  if not board:isValid(point) then
+    return false
+  end
   -- check if there is a pawn on the space
-  local current = pawn:getBoard():getPawnAt(point)
+  local board = pawn:getBoard()
+  local current = board:getPawnAt(point)
   if current ~= nil then
     -- if there is, can move there if not our color
     if not current:isColor(pawn) then
