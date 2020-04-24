@@ -469,7 +469,7 @@ end
 ]]
 function Agent:getAverageScore()
   if #self.scores == 0 then
-    error("Agent has not been scored")
+    return 0
   end
   -- use cached score if valid
   if self.lastScores == #self.scores then
