@@ -329,7 +329,7 @@ function Generation:write(filename)
   -- write each agent
   for _, agent in ipairs(self.agents) do
     table.insert(output, "    ")
-    table.insert(output, agent:save())
+    table.insert(output, agent:save(false))
     table.insert(output, ",\n")
   end
   table.insert(output, "  }\n}")
