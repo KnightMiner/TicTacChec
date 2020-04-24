@@ -444,7 +444,7 @@ function Agent:calcScore(debug)
       print("Opponent lined up: " .. opLine)
       print("Opponent lined count: " .. opCount)
     end
-    score = score - (6 * (line*8 + count))
+    score = score - (6 * (opLine*8 + opCount))
   end
 
   -- 0 is the min score
