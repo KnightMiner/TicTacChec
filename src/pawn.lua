@@ -15,6 +15,7 @@ Pawn.__index = Pawn
   @return  new pawn instance
 ]]
 function Pawn:new(type, color)
+  assert(PawnType.isA(type), "Invalid pawn type")
   assert(Color.isA(color), "Invalid color")
   return setmetatable({
     type = type,

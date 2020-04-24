@@ -38,7 +38,14 @@ end
   @return  true if its a board
 ]]
 function PawnType.isA(type)
-  return getmetatable(type) == PawnType
+  local meta = type
+  while meta ~= nil do
+    meta = getmetatable(meta)
+    if meta == PawnType then
+      return true
+    end
+  end
+  return false
 end
 
 --[[--
