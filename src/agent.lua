@@ -540,7 +540,7 @@ function Agent:save(calcScore)
   -- score is optional, set only if provided
   local out = {"{weights=", self.network:getWeightString()}
   if #self.scores ~= 0 then
-    table.insert(out, ",score={")
+    table.insert(out, ",scores={")
     table.insert(out, table.concat(self.scores, ","))
     table.insert(out, "}")
   end

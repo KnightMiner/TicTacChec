@@ -98,7 +98,7 @@ function Generation.read(filename)
     assert(agent.score == nil or type(agent.score) == "number", "Invalid agent, score must be a number")
     agents[i] = Agent{
       network = def:build(agent.weights),
-      score = agent.score
+      scores = agent.scores
     }
   end
   -- finally, create the generation
