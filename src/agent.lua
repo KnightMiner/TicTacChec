@@ -95,7 +95,7 @@ function Agent.makeDefinition(data)
   assert(type(layers) == "table", "Layers must be a table")
 
   -- start with X and Y value nodes
-  local outputs = {"Clamp", "Clamp"}
+  local outputs = {"SigPos", "SigPos"}
   -- add decision node for each piece type
   for i = 1, pawns do
     table.insert(outputs, "Sig")

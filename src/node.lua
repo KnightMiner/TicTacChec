@@ -142,8 +142,8 @@ addNode("Sig", sig)
 
 --- Sigmoid function to clamp values between 0 and 1
 local function sigPos(input)
-  -- TODO: implement
+  return (sig(input) + 1) / 2
 end
---addNode("SigPos", sig)
+addNode("SigPos", sig)
 
 return Node
