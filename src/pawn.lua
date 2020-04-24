@@ -225,8 +225,11 @@ end
 
   @param point  Point to target
 ]]
-function Pawn:moveOrAddTo(point)
+function Pawn:moveOrAddTo(point, y)
   assert(self.board ~= nil, "Pawn not added to a board")
+  if type(point) == "number" and type(y) == "number" then
+    point = Point(point, y)
+  end
   assert(Point.isA(point), "Argument must be instance of point")
 
   -- nil space means not on board
@@ -235,7 +238,11 @@ function Pawn:moveOrAddTo(point)
   else
     self:moveTo(point)
   end
+  return board
 end
+
+--- Make calling a pawn instance move or add it to the board, for debug
+Pawn.__call = Pawn.moveOrAddTo
 
 --[[--
   Gets a list of valid moves for the pawn
