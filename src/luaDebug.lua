@@ -58,7 +58,12 @@ gens[1] = Generation.generate(def, 100)
 gens[1]:playGames(5, 20)
 print(string.format("Generation 1, best %.1f, average %.2f", gens[1]:getBestAgent():getAverageScore(), gens[1]:getAverageScore()))
 for i = 2, 20 do
-  gens[i] = gens[i-1]:reproduce(100, 1 / i, 10)
+  gens[i] = gens[i-1]:reproduce{
+    count = 100,
+    mutationChance = 1 / i,
+    clones = 5,
+    rand = 1
+  }
   gens[i]:playGames(5, 10 * math.floor(math.sqrt(i)))
   print(string.format("Generation %d, best %.1f, average %.2f", i, gens[i]:getBestAgent():getAverageScore(), gens[i]:getAverageScore()))
 end

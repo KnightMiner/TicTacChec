@@ -186,12 +186,17 @@ end
   @param clones          Number of the best to clone from this generation
   @return New Generation instance
 ]]
-function Generation:reproduce(count, mutationChance, clones)
-  clones = clones or 0
+function Generation:reproduce(data)
+  assert(type(data) == "table", "Parameter must be a table")
+  local count = data.count
+  local clones = data.clones or 0
+  local rand = data.rand or 0
+  local mutationChance = data.mutationChance or 0.05
   assert(type(count) == "number" and count > 0 and count % 2 == 0, "Count must be an even, positive integer")
+  assert(type(clones) == "number" and clones >= 0 and clones % 1 == 0, "Clones must be a non-negative integer")
+  assert(type(rand) == "number" and rand >= 0 and rand % 1 == 0, "Rand must be a non-negative integer")
   assert(type(mutationChance) == "number" and mutationChance >= 0 and mutationChance <= 1, "Mutation chance must be a number between 0 and 1")
-  assert(type(clones) == "number" and clones >= 0, "Clones must be a non-negative integer")
-  -- table to hold agents as they are created
+    -- table to hold agents as they are created
   local newAgents = {}
 
   -- copy the best X clones into the next generation
@@ -207,9 +212,16 @@ function Generation:reproduce(count, mutationChance, clones)
     end
   end
 
+  -- number of random new members with no parents
+  if rand > 0 then
+    for i = 1, rand do
+      table.insert(newAgents, Agent:new{network = self.definition:generate()})
+    end
+  end
+
   -- Holds sum of all the agents scores
   local totalScore = getTotalScore(self)
-  for i = 1, (count - clones) do
+  for i = 1, (count - clones - rand) do
     -- get two random agents for breeding
     local agent1 = getRandomAgent(self, totalScore)
     local agent2 = getRandomAgent(self, totalScore)
