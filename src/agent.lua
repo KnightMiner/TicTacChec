@@ -152,6 +152,7 @@ function Agent:setBoard(board, color)
   -- finally, set the property
   self.board = board
   self.color = color
+  self.gameScores = {}
 end
 
 --[[--
@@ -174,10 +175,12 @@ end
 
 --[[--
   Causes the agent to make a single move in the board
-
+  @param frequency  How often to score a board. If unset, never scores
   @return board if we made a move, nil otherwise
 ]]
-function Agent:makeMove()
+function Agent:makeMove(takeScore)
+  takeScore = takeScore or false
+  assert(type(takeScore) == "boolean", "takeScore must be a boolean")
   assert(self.board ~= nil and self.color ~= nil, "Must set agent board before getting moves")
   -- out pawns go first as inputs
   local inputs = {}
@@ -229,6 +232,10 @@ function Agent:makeMove()
   -- make the move if we found one
   if moveIndex ~= nil and moveSpace ~= nil then
     self.board:getPawn(self.color, moveIndex):moveOrAddTo(moveSpace)
+    -- insert the score after that move for tracking
+    if takeScore then
+      table.insert(self.gameScores, self:calcScore())
+    end
     return self.board
   end
   -- false means no move found
@@ -452,15 +459,28 @@ function Agent:calcScore(debug)
 end
 
 --[[--
+  Gets the average score for this current game
+  @param self  Agent instance
+  @return  Average score for the current game
+]]
+local function getGameScore(self)
+  if #self.gameScores == 0 then
+    return 0
+  end
+  -- sum all scores
+  local sum = 0
+  for _, score in ipairs(self.gameScores) do
+    sum = sum + score
+  end
+  return sum / #self.gameScores
+end
+
+--[[--
   Saves a score to the agent
-  @return  The saved score
 ]]
 function Agent:saveScore()
-  local score = self:calcScore()
-  if score ~= nil then
-    table.insert(self.scores, score)
-  end
-  return score
+  assert(self.board ~= nil and self.color ~= nil, "Must have a board to score")
+  table.insert(self.scores, 0.1 * self:calcScore() + 0.9 * getGameScore(self))
 end
 
 --[[--

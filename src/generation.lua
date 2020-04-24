@@ -257,15 +257,17 @@ end
 --[[--
   Plays a game with two agents
 
-  @param agent1  First agent
-  @param agent2  Second agent
-  @param moves   Max number of moves to play
+  @param agent1     First agent
+  @param agent2     Second agent
+  @param moves      Max number of moves to play
+  @param frequency  How often to score moves
   @return winning agent
 ]]
-local function playGame(agent1, agent2, moves)
+local function playGame(agent1, agent2, moves, frequency)
   assert(Agent.isA(agent1), "Argument #1 must be an agent")
   assert(Agent.isA(agent2), "Argument #2 must be an agent")
   assert(type(moves) == "number" and moves > 0 and moves % 1 == 0, "Argument #3 must be a positive integer")
+  assert(frequency == nil or (type(frequency) == "number" and frequency > 0 and frequency % 1 == 0), "Frequency must be a positive integer")
   local pawnCount = agent1:getPawnCount()
   assert(pawnCount == agent2:getPawnCount(), "Agents must have the same number of pawns")
   assert(agent1:getPlayerCount() == agent2:getPlayerCount(), "Agents must have the same number of players")
@@ -276,12 +278,16 @@ local function playGame(agent1, agent2, moves)
   agent2:setBoard(gameBoard, Color.BLACK)
   -- play for the given number of moves
   for currentMove = 1, moves do
-    agent1:makeMove()
+    local takeScore = frequency and (currentMove % frequency) == 0
+    if takeScore then
+      print("Scoring move " .. currentMove)
+    end
+    agent1:makeMove(takeScore)
     -- Check for win and return if won
     if gameBoard:getWinner() ~= nil then
       return agent1
     end
-    agent2:makeMove()
+    agent2:makeMove(takeScore)
     -- Check for win and return if won
     if gameBoard:getWinner() ~= nil then
       return agent2
@@ -294,12 +300,14 @@ end
 --[[--
   Plays all agents against each other to score children
 
-  @param games  Number of games for each agent to play
-  @param moves  Number of moves to play in each game
+  @param games      Number of games for each agent to play
+  @param moves      Number of moves to play in each game
+  @param frequency  How often to score moves, nil for never
 ]]
-function Generation:playGames(games, moves)
+function Generation:playGames(games, moves, frequency)
   assert(type(games) == "number" and games > 0 and games % 1 == 0, "Games must be a positive integer")
   assert(type(moves) == "number" and moves > 0 and moves % 1 == 0, "Moves must be a positive integer")
+  assert(frequency == nil or (type(frequency) == "number" and frequency > 0 and frequency % 1 == 0), "Frequency must be a positive integer")
 
   -- TODO Multiple games will erase the previous score
   for i = 1, games do
@@ -313,7 +321,7 @@ function Generation:playGames(games, moves)
     end
     for i = 1, #shuffled, 2 do
       -- Take agents by twos and play a game
-      playGame(shuffled[i], shuffled[i+1], moves)
+      playGame(shuffled[i], shuffled[i+1], moves, frequency)
       shuffled[i]:saveScore()
       shuffled[i+1]:saveScore()
     end

@@ -55,16 +55,16 @@ black.agent = Agent{network = def:generate()}
 black.agent:setBoard(board, Color.BLACK)
 gens = {}
 gens[1] = Generation.generate(def, 100)
-gens[1]:playGames(5, 20)
+gens[1]:playGames(5, 20, 5)
 print(string.format("Generation 1, best %.1f, average %.2f", gens[1]:getBestAgent():getAverageScore(), gens[1]:getAverageScore()))
-for i = 2, 20 do
+for i = 2, 5 do
   gens[i] = gens[i-1]:reproduce{
     count = 100,
     mutationChance = 1 / i,
     clones = 5,
     rand = 1
   }
-  gens[i]:playGames(5, 10 * math.floor(math.sqrt(i)))
+  gens[i]:playGames(5, 10 * math.floor(math.sqrt(i)), 5)
   print(string.format("Generation %d, best %.1f, average %.2f", i, gens[i]:getBestAgent():getAverageScore(), gens[i]:getAverageScore()))
 end
 
