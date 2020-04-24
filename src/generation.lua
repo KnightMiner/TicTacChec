@@ -12,6 +12,10 @@ local TYPES = {
   require("pawnTypes/pawn"),
   require("pawnTypes/bishop"),
   require("pawnTypes/knight"),
+  require("pawnTypes/king"),
+  require("pawnTypes/pawn"),
+  require("pawnTypes/pawn"),
+  require("pawnTypes/pawn"),
 }
 
 --- Index table, called Generation for conveience of adding functions
@@ -242,7 +246,8 @@ local function makeBoard(size)
 
   local board = Board(size)
 
-  for _, type in ipairs(TYPES) do
+  for i = 1, size do
+    local type = TYPES[i]
     board:addPawn(Pawn(type, Color.WHITE))
     board:addPawn(Pawn(type, Color.BLACK))
   end
