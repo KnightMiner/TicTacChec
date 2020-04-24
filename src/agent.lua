@@ -55,12 +55,19 @@ function Agent:new(data)
   assert(pawns > 0 and pawns % 1 == 0, "Pawns must be an integer greater than 0")
 
   -- start creating agent
-  local agent = {network = data.network}
+  local agent = {network = data.network, lastScores = 0}
 
   -- score is optional
-  if data.score ~= nil then
-    assert(type(data.score) == "number" and data.score >= 0 and data.score <= 1, "Score must be a number")
-    agent.score = data.score
+  if data.scores ~= nil then
+    assert(type(data.scores) == "table", "Scores must be a table")
+    local agentScores = {}
+    for i, score in ipairs(data.scores) do
+      assert(type(score) == "number" and score >= 0, "Score must be a number")
+      agentScores[i] = score
+    end
+    agent.scores = agentScores
+  else
+    agent.scores = {}
   end
   -- create final object
   return setmetatable(agent, self)
@@ -428,8 +435,7 @@ function Agent:calcScore(debug)
   -- most important is having a line, multiples secondary
   -- next is our line not being blocked, then blocking the opponent
   -- minimal is a short game
-  self.score = (10 * (line*8 + count)) - (2*blocked) + blocking - (self.board:getMoveCount() / 2)
-
+  local score = (10 * (line*8 + count)) - (2*blocked) + blocking - (self.board:getMoveCount() / 2)
   for _, opponents in ipairs(board:getOpponents(self.color)) do
     -- worth more than blocking
     local opLine, opCount = getLinedUp(self.board, opponents)
@@ -438,26 +444,46 @@ function Agent:calcScore(debug)
       print("Opponent lined up: " .. opLine)
       print("Opponent lined count: " .. opCount)
     end
-    self.score = self.score - (6 * (line*8 + count))
+    score = score - (6 * (line*8 + count))
   end
 
   -- 0 is the min score
-  self.score = math.max(self.score, 0)
-
-  return self.score
+  return math.max(score, 0)
 end
 
 --[[--
-  Gets the score for this agent from cache, or calculates it if missing
-
-  @return  Agents cached score
+  Saves a score to the agent
+  @return  The saved score
 ]]
-function Agent:getScore()
-  if self.score == nil then
-    self:calcScore()
+function Agent:saveScore()
+  local score = self:calcScore()
+  if score ~= nil then
+    table.insert(self.scores, score)
+  end
+  return score
+end
+
+--[[--
+  Gets the average score for all games for this agent
+  @return  Agents average score
+]]
+function Agent:getAverageScore()
+  if #self.scores == 0 then
+    error("Agent has not been scored")
+  end
+  -- use cached score if valid
+  if self.lastScores == #self.scores then
+    return self.averageScore
   end
 
-  return self.score
+  -- sum all scores
+  local sum = 0
+  for _, score in ipairs(self.scores) do
+    sum = sum + score
+  end
+  self.averageScore = sum / #self.scores
+  self.lastScores = #self.scores
+  return self.averageScore
 end
 
 --[[--
@@ -465,8 +491,8 @@ end
 ]]
 function Agent:getReplacement(mate)
   assert(Agent.isA(mate), "Mate must be an Agent")
-  local selfScore = self:getScore()
-  local mateScore = mate:getScore()
+  local selfScore = self:getAverageScore()
+  local mateScore = mate:getAverageScore()
   return mateScore / (selfScore + mateScore)
 end
 
@@ -501,14 +527,15 @@ function Agent:save(calcScore)
 
   -- calc the score if requested
   if calcScore then
-    self:calcScore()
+    self:saveScore()
   end
 
   -- score is optional, set only if provided
   local out = {"{weights=", self.network:getWeightString()}
-  if self.score ~= nil then
-    table.insert(out, ",score=")
-    table.insert(out, self.score)
+  if #self.scores ~= 0 then
+    table.insert(out, ",score={")
+    table.insert(out, table.concat(self.scores, ","))
+    table.insert(out, "}")
   end
   table.insert(out, "}")
   return table.concat(out);

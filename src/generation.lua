@@ -120,7 +120,7 @@ function Generation:getBestAgent()
   -- holds best agent to be returned
   local bestAgent
   for _, agent in ipairs(self.agents) do
-    local agentScore = agent:getScore()
+    local agentScore = agent:getAverageScore()
     if curMax < agentScore then
       curMax = agentScore
       bestAgent = agent
@@ -149,7 +149,7 @@ local function getRandomAgent(self, totalScore)
   local targetScore = math.random() * totalScore
   -- Find which agents range has the targetScore
   for _, agent in ipairs(self.agents) do
-    compiledScore = compiledScore + agent:getScore()
+    compiledScore = compiledScore + agent:getAverageScore()
     if compiledScore >= targetScore then
       return agent
     end
@@ -166,7 +166,7 @@ end
 local function getTotalScore(self)
   local totalScore = 0
   for _, agent in ipairs(self.agents) do
-    totalScore = totalScore + (agent:calcScore() or 0)
+    totalScore = totalScore + (agent:getAverageScore() or 0)
   end
   return totalScore
 end
@@ -281,6 +281,8 @@ function Generation:playGames(games, moves)
     for i = 1, #shuffled, 2 do
       -- Take agents by twos and play a game
       playGame(shuffled[i], shuffled[i+1], moves)
+      shuffled[i]:saveScore()
+      shuffled[i+1]:saveScore()
     end
   end
 end
@@ -299,7 +301,7 @@ function Generation:write(filename)
   -- write each agent
   for _, agent in ipairs(self.agents) do
     table.insert(output, "    ")
-    table.insert(output, agent:save(true))
+    table.insert(output, agent:save())
     table.insert(output, ",\n")
   end
   table.insert(output, "  }\n}")
