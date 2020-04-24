@@ -40,11 +40,20 @@ for key, type in pairs(types) do
 end
 
 -- set up network stuff
-def = Agent.makeDefinition{players = 2, pawns = count, layers = {6}}
+def = Agent.makeDefinition{players = 2, pawns = count, layers = {6, 6, 7}}
 white.agent = Agent{network = def:generate()}
 white.agent:setBoard(board, Color.WHITE)
 black.agent = Agent{network = def:generate()}
 black.agent:setBoard(board, Color.BLACK)
+gens = {}
+gens[1] = Generation.generate(def, 100)
+gens[1]:playGames(5, 20)
+print(string.format("Generation 1, best %.1f, average %.2f", gens[1]:getBestAgent():getAverageScore(), gens[1]:getAverageScore()))
+for i = 2, 20 do
+  gens[i] = gens[i-1]:reproduce(100, 1 / i)
+  gens[i]:playGames(5, 10 * math.floor(math.sqrt(i)))
+  print(string.format("Generation %d, best %.1f, average %.2f", i, gens[i]:getBestAgent():getAverageScore(), gens[i]:getAverageScore()))
+end
 
 -- print the board to start
 print(board)
