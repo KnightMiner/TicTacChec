@@ -358,18 +358,19 @@ function Generation:run(data)
     -- Save information into table
     table.insert(gens, self)
     -- Print summary of generation
-    print(string.format("Generation 1, best %.1f, average %.2f", gens[1]:getBestAgent():getAverageScore(), gens[1]:getAverageScore()))
+    print(string.format("Generation 1, best %.1f, average %.2f", self:getBestAgent():getAverageScore(), self:getAverageScore()))
+    local current = self
     for i = 2, generations do
       -- Reproduce with given parameters
-      self = self:reproduce{
+      current = current:reproduce{
         count = _count,
         mutationChance = _mutationChance,
         clones = _clones,
         rand = _rand
       }
-      self:playGames(games, moves, frequency)
-      table.insert(gens, self)
-      print(string.format("Generation %d, best %.1f, average %.2f", i, gens[i]:getBestAgent():getAverageScore(), gens[i]:getAverageScore()))
+      current:playGames(games, moves, frequency)
+      table.insert(gens, current)
+      print(string.format("Generation %d, best %.1f, average %.2f", i, current:getBestAgent():getAverageScore(), current:getAverageScore()))
     end
     return gens
 end
