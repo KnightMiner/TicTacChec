@@ -525,10 +525,14 @@ function Agent:calcScore(debug)
   -- next is our line not being blocked, then blocking the opponent
   -- minimal is a short game
   local score = (10 * (line*8 + count)) - (2*blocked) + blocking - (self.board:getMoveCount() / 2)
+  -- add in winning bonus
+  if line == self.board:getSize() then
+    score = score + 25
+  end
+  -- negatives for opponent lines
   for _, opponents in ipairs(self.board:getOpponents(self.color)) do
     -- worth more than blocking
     local opLine, opCount = getLinedUp(self.board, opponents)
-
     if debug then
       print("Opponent lined up: " .. opLine)
       print("Opponent lined count: " .. opCount)
