@@ -279,9 +279,6 @@ local function playGame(agent1, agent2, moves, frequency)
   -- play for the given number of moves
   for currentMove = 1, moves do
     local takeScore = frequency and (currentMove % frequency) == 0
-    if takeScore then
-      print("Scoring move " .. currentMove)
-    end
     agent1:makeMove(takeScore)
     -- Check for win and return if won
     if gameBoard:getWinner() ~= nil then
@@ -350,6 +347,62 @@ function Generation:write(filename)
   local file = io.open(SAVE_PATH .. filename .. EXTENSION, "w")
   file:write(table.concat(output))
   file:close()
+end
+
+--[[--
+    Runs the generation for a specified cycles
+
+    @param games           Number of games for each agent to play
+    @param moves           Number of moves to play in each game
+    @param frequency       How often to score moves, nil for never
+    @param generations     Number of generations to play
+    @param count           Number of children to produce per generation
+    @param clones          Number of the best to clone per generation
+    @param rand            Number of random agents to create for each generation
+    @param mutationChance  Chance of mutation per weight when agents breed
+
+    @return table of information containing each agent and each generation
+]]
+function Generation:run(data)
+    assert(type(data) == "table", "Parameter must be a table")
+    local games = data.games
+    local moves = data.moves
+    local frequency = data.frequency
+    local generations = data.generations
+    local _count = data.count
+    local _clones = data.clones or 0
+    local _rand = data.rand or 0
+    local _mutationChance = data.mutationChance or 0.05
+    assert(type(games) == "number" and games > 0 and games % 1 == 0, "Games must be a positive integer")
+    assert(type(moves) == "number" and moves > 0 and moves % 1 == 0, "Moves must be a positive integer")
+    assert(frequency == nil or (type(frequency) == "number" and frequency > 0 and frequency % 1 == 0), "Frequency must be a positive integer")
+    assert(type(generations) == "number" and generations > 0, "Generations must be a positive integer")
+    assert(type(_clones) == "number" and _clones > 0 and _clones % 2 == 0, "Count must be an even, positive integer")
+    assert(type(_clones) == "number" and _clones >= 0 and _clones % 1 == 0, "Clones must be a non-negative integer")
+    assert(type(_rand) == "number" and _rand >= 0 and _rand % 1 == 0, "Rand must be a non-negative integer")
+    assert(type(_mutationChance) == "number" and _mutationChance >= 0 and _mutationChance <= 1, "Mutation chance must be a number between 0 and 1")
+
+
+    local gens = {}
+    -- Play games for first generation
+    self:playGames(games, moves, frequency)
+    -- Save information into table
+    table.insert(gens, self)
+    -- Print summary of generation
+    print(string.format("Generation 1, best %.1f, average %.2f", gens[1]:getBestAgent():getAverageScore(), gens[1]:getAverageScore()))
+    for i = 2, generations do
+      -- Reproduce with given parameters
+      self = self:reproduce{
+        count = _count,
+        mutationChance = _mutationChance,
+        clones = _clones,
+        rand = _rand
+      }
+      self:playGames(games, moves, frequency)
+      table.insert(gens, self)
+      print(string.format("Generation %d, best %.1f, average %.2f", i, gens[i]:getBestAgent():getAverageScore(), gens[i]:getAverageScore()))
+    end
+    return gens
 end
 
 return Generation
