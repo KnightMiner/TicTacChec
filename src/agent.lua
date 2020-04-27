@@ -199,7 +199,7 @@ function Agent:makeMove(takeScore)
   local pawns = self:getPawnCount()
   getPawnInputs(inputs, self.board, self.color, pawns)
   -- then get all opponent pawns
-  for opponent in board:colorIterator() do
+  for opponent in self.board:colorIterator() do
     -- skip own pawn colors
     if opponent ~= self.color then
       getPawnInputs(inputs, self.board, opponent, pawns)
@@ -227,7 +227,7 @@ function Agent:makeMove(takeScore)
       local diff = minDistance - distance
       local useMove = false
       if math.abs(diff) < MATCHING then
-        if outputs[PAWN_OFFSET+moveIndex] < outputs[PAWN_OFFSET+index] then
+        if moveIndex == nil or (outputs[PAWN_OFFSET+moveIndex] < outputs[PAWN_OFFSET+index]) then
           useMove = true
         end
       elseif diff > 0 then
@@ -477,7 +477,7 @@ function Agent:calcScore(debug)
   -- next is our line not being blocked, then blocking the opponent
   -- minimal is a short game
   local score = (10 * (line*8 + count)) - (2*blocked) + blocking - (self.board:getMoveCount() / 2)
-  for _, opponents in ipairs(board:getOpponents(self.color)) do
+  for _, opponents in ipairs(self.board:getOpponents(self.color)) do
     -- worth more than blocking
     local opLine, opCount = getLinedUp(self.board, opponents)
 
