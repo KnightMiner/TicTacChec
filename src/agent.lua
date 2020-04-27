@@ -423,8 +423,8 @@ local function getBlockedScore(board, color)
       local pawnPosition = pawn:getSpace()
       -- if it can be captured by/moved to by a piece in the line, worth 1
       if pawnPosition ~= nil and
-         ((dir == HORIZONTAL and pawnPosition.x == point.x) or
-         (dir == VERTICAL and pawnPosition.y == point.y) or
+         ((dir == HORIZONTAL and pawnPosition.y == point.y) or
+         (dir == VERTICAL and pawnPosition.x == point.x) or
          (dir == PDIAGONAL and pawnPosition.x == pawnPosition.y) or
          (dir == NDIAGONAL and pawnPosition.x == (maxCoord - pawnPosition.y))) then
         tempScore = 5
