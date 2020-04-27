@@ -448,8 +448,56 @@ end
   @param color  Color being blocked
 ]]
 local function getBlockingScore(board, color)
-  -- TODO: update to support more than 2 players
-  return getBlockedScore(board, board:getOpponents(color)[1])
+  local score = 0
+  local size = board:getSize()
+  local maxCoord = size - 1
+  for i = 1, board:getPawnCount(color) do
+    local pawn = board:getPawn(color, i)
+    local space = pawn:getSpace()
+    if space ~= nil then
+      -- determine which directions have a line
+      local starts = {Point(0, space.y), Point(space.x, 0)}
+      local offsets = {Point(1, 0), Point(0, 1)}
+      if space.x == space.y then
+        table.insert(starts, Point(0,0))
+        table.insert(offsets, Point(1,1))
+      end
+      if space.x == (maxCoord - space.y) then
+        table.insert(starts, Point(0, 3))
+        table.insert(offsets, Point(1, -1))
+      end
+      -- iterate through each direction
+      for i = 1, #starts do
+        local count = 0
+        local point = starts[i]
+        local offset = offsets[i]
+        while board:isValid(point) do
+          -- skip empty spaces and our own pieces
+          local pawn = board:getPawnAt(point)
+          -- TODO: this does not handle the case of multiple opponent colors in the line
+          if pawn ~= nil then
+            if pawn:isColor(color) then
+              -- if another piece is in this line, skip so its not double counted
+              if space:getIndex(size) < point:getIndex(size) then
+                count = 0
+                break
+              end
+            else
+              count = count + 1
+            end
+          end
+          point = point + offset
+        end
+        -- bonus points for max length line
+        score = score + (count * 5)
+        if count == maxCoord then
+          score = score + 5
+        end
+      end
+    end
+  end
+
+  return score
 end
 
 --[[--
