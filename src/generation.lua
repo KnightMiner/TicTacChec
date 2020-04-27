@@ -313,7 +313,11 @@ function Generation:write(filename)
   end
   table.insert(output, "  }\n}")
   -- create the file
-  local file = io.open(SAVE_PATH .. filename .. EXTENSION, "w")
+  local path = SAVE_PATH .. filename .. EXTENSION
+  local file = io.open(path, "w")
+  if file == nil then
+    error("Cannot create file " .. path)
+  end
   file:write(table.concat(output))
   file:close()
 end
