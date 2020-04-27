@@ -365,16 +365,24 @@ function Generation:run(data)
     print(string.format("Generation 1, best %.1f, average %.2f", self:getBestAgent():getAverageScore(), self:getAverageScore()))
     local current = self
     for i = 2, generations do
-      -- Reproduce with given parameters
-      current = current:reproduce{
-        count = _count,
-        mutationChance = _mutationChance,
-        clones = _clones,
-        rand = _rand
-      }
-      current:playGames(games, moves, frequency)
+      -- catch any errors that happen, just so we don't have to restart training
+      local status, err = xpcall(function()
+        -- Reproduce with given parameters
+        current = current:reproduce{
+          count = _count,
+          mutationChance = _mutationChance,
+          clones = _clones,
+          rand = _rand
+        }
+        current:playGames(games, moves, frequency)
+        print(string.format("Generation %d, best %.1f, average %.2f", i, current:getBestAgent():getAverageScore(), current:getAverageScore()))
+      end, debug.traceback)
+      -- if a generation errored, print the error and stop running new generations
+      if not status then
+        print(err)
+        break
+      end
       table.insert(gens, current)
-      print(string.format("Generation %d, best %.1f, average %.2f", i, current:getBestAgent():getAverageScore(), current:getAverageScore()))
     end
     return gens
 end
