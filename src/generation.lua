@@ -325,7 +325,7 @@ end
     @param moves           Number of moves to play in each game
     @param frequency       How often to score moves, nil for never
     @param generations     Number of generations to play
-    @param count           Number of children to produce per generation
+    @param count           Number of children to produce per child generation
     @param clones          Number of the best to clone per generation
     @param rand            Number of random agents to create for each generation
     @param mutationChance  Chance of mutation per weight when agents breed
@@ -338,7 +338,7 @@ function Generation:run(data)
     local moves = data.moves
     local frequency = data.frequency
     local generations = data.generations
-    local _count = data.count
+    local _count = data.count or #self.agents
     local _clones = data.clones or 0
     local _rand = data.rand or 0
     local _mutationChance = data.mutationChance or 0.05
@@ -346,7 +346,7 @@ function Generation:run(data)
     assert(type(moves) == "number" and moves > 0 and moves % 1 == 0, "Moves must be a positive integer")
     assert(frequency == nil or (type(frequency) == "number" and frequency > 0 and frequency % 1 == 0), "Frequency must be a positive integer")
     assert(type(generations) == "number" and generations > 0, "Generations must be a positive integer")
-    assert(type(_clones) == "number" and _clones > 0 and _clones % 2 == 0, "Count must be an even, positive integer")
+    assert(type(_count) == "number" and _count > 0 and _count % 2 == 0, "Count must be an even, positive integer")
     assert(type(_clones) == "number" and _clones >= 0 and _clones % 1 == 0, "Clones must be a non-negative integer")
     assert(type(_rand) == "number" and _rand >= 0 and _rand % 1 == 0, "Rand must be a non-negative integer")
     assert(type(_mutationChance) == "number" and _mutationChance >= 0 and _mutationChance <= 1, "Mutation chance must be a number between 0 and 1")
