@@ -6,17 +6,6 @@ local Color = require("color")
 --- Path to generation save files
 local SAVE_PATH = "../generations/"
 local EXTENSION = ".gen"
--- Pawn types for the board
-local TYPES = {
-  require("pawnTypes/rook"),
-  require("pawnTypes/pawn"),
-  require("pawnTypes/bishop"),
-  require("pawnTypes/knight"),
-  require("pawnTypes/king"),
-  require("pawnTypes/pawn"),
-  require("pawnTypes/pawn"),
-  require("pawnTypes/pawn"),
-}
 
 --- Index table, called Generation for conveience of adding functions
 local Generation = {}
@@ -236,25 +225,6 @@ function Generation:reproduce(data)
 end
 
 --[[--
-  Creates a standard game board for a game
-
-  @param size   Size of the board
-  @return new board instance
-]]
-local function makeBoard(size)
-  assert(type(size) == "number" and size > 0 and size % 1 == 0, "Size must be a positive integer")
-
-  local board = Board(size)
-
-  for i = 1, size do
-    local type = TYPES[i]
-    board:addPawn(Pawn(type, Color.WHITE))
-    board:addPawn(Pawn(type, Color.BLACK))
-  end
-  return board
-end
-
---[[--
   Plays a game with two agents
 
   @param agent1     First agent
@@ -273,8 +243,7 @@ local function playGame(agent1, agent2, moves, frequency)
   assert(agent1:getPlayerCount() == agent2:getPlayerCount(), "Agents must have the same number of players")
 
   -- create a new board for the agents to play
-  local gameBoard = makeBoard(pawnCount)
-  agent1:setBoard(gameBoard, Color.WHITE)
+  local gameBoard = agent1:makeBoard(Color.WHITE)
   agent2:setBoard(gameBoard, Color.BLACK)
   -- play for the given number of moves
   for currentMove = 1, moves do

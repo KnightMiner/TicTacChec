@@ -14,6 +14,18 @@ local PAWN_OFFSET = GENERAL_NODES - 1
 --- If within this distance, two points match and fallback to pawn logic
 local MATCHING = 0.1
 
+--- Pawn types for the board
+local TYPES = {
+  require("pawnTypes/rook"),
+  require("pawnTypes/pawn"),
+  require("pawnTypes/bishop"),
+  require("pawnTypes/knight"),
+  require("pawnTypes/king"),
+  require("pawnTypes/pawn"),
+  require("pawnTypes/pawn"),
+  require("pawnTypes/pawn"),
+}
+
 --- Index table, called Board for conveience of adding functions
 local Agent = {}
 Agent.__index = Agent
@@ -240,6 +252,28 @@ function Agent:makeMove(takeScore)
   end
   -- false means no move found
   return nil
+end
+
+
+--[[--
+  Creates a standard game board for a game
+  @param color  Color to use for this agent. If undefined, does not add the board to the agent
+  @return new board instance
+]]
+function Agent:makeBoard(color)
+  assert(color == nil or Color.isA(color), "Argument #1 must be a color if defined")
+  local size = self:getPawnCount()
+  local board = Board(size)
+  for i = 1, size do
+    local type = TYPES[i]
+    board:addPawn(Pawn(type, Color.WHITE))
+    board:addPawn(Pawn(type, Color.BLACK))
+  end
+  -- set color if requested
+  if color ~= nil then
+    self:setBoard(board, color)
+  end
+  return board
 end
 
 --------------
