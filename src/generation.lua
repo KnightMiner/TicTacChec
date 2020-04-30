@@ -333,6 +333,7 @@ end
     @param clones          Number of the best to clone per generation
     @param rand            Number of random agents to create for each generation
     @param mutationChance  Chance of mutation per weight when agents breed
+    @param returnFinal     If true, only returns the final generation. False (default) returns an array of all trained generations.
 
     @return table of information containing each agent and each generation
 ]]
@@ -346,6 +347,7 @@ function Generation:run(data)
     local _clones = data.clones or 0
     local _rand = data.rand or 0
     local _mutationChance = data.mutationChance or 0.05
+    local returnFinal = data.returnFinal or false
     assert(type(games) == "number" and games > 0 and games % 1 == 0, "Games must be a positive integer")
     assert(type(moves) == "number" and moves > 0 and moves % 1 == 0, "Moves must be a positive integer")
     assert(frequency == nil or (type(frequency) == "number" and frequency > 0 and frequency % 1 == 0), "Frequency must be a positive integer")
@@ -354,13 +356,15 @@ function Generation:run(data)
     assert(type(_clones) == "number" and _clones >= 0 and _clones % 1 == 0, "Clones must be a non-negative integer")
     assert(type(_rand) == "number" and _rand >= 0 and _rand % 1 == 0, "Rand must be a non-negative integer")
     assert(type(_mutationChance) == "number" and _mutationChance >= 0 and _mutationChance <= 1, "Mutation chance must be a number between 0 and 1")
+    assert(type(returnFinal) == "boolean", "returnAll must be a boolean")
 
-
-    local gens = {}
+    local gens
     -- Play games for first generation
     self:playGames(games, moves, frequency)
-    -- Save information into table
-    table.insert(gens, self)
+    -- Save information into table if requested
+    if not returnFinal then
+      gens = {self}
+    end
     -- Print summary of generation
     print(string.format("Generation 1, best %.1f, average %.2f", self:getBestAgent():getAverageScore(), self:getAverageScore()))
     local current = self
@@ -382,9 +386,12 @@ function Generation:run(data)
         print(err)
         break
       end
-      table.insert(gens, current)
+      if not returnFinal then
+        table.insert(gens, current)
+      end
     end
-    return gens
+    -- return final saves memory, if passed skip the array return
+    return returnFinal and current or gens
 end
 
 return Generation

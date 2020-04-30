@@ -54,11 +54,11 @@ Generations:
 --[[--
   Runs the geneations as set up
 ]]
-function run()
+function run(gen)
   local def = Agent.makeDefinition{players = 2, pawns = 4, layers = {16, 12}}
   local time = os.time()
   print("Starting generations")
-  local gen = Generation.generate(def, 100)
+  local gen = gen or Generation.generate(def, 100)
   gens = gen:run{
     generations = 250,
     -- breeding
