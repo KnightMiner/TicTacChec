@@ -39,6 +39,7 @@ function prepareGame(agent)
   for i = count+1, #pieces do
     _G[pieces[i]] = nil
   end
+  return board
 end
 
 --[[
@@ -72,4 +73,4 @@ function run()
   print(string.format("Finished generations in %d seconds", os.time() - time))
 end
 
-return ""
+return run

@@ -225,10 +225,11 @@ function Board:makeMove(pawn, from)
 
   -- update message
   local name = tostring(pawn)
+  -- removing
   if to == nil then
     self.message = string.format("Removed %s from %d,%d", name, from.x, from.y)
   -- placing
-  if from == nil then
+  elseif from == nil then
     self.message = string.format("Placed %s at %d,%d", name, to.x, to.y)
   else
     -- moving
