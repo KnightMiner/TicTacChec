@@ -135,7 +135,7 @@ end
 function Pawn:setSpace(point)
   assert(self.board ~= nil, "Pawn not added to a board")
   if point ~= nil then
-    assert(Point.isA(point), "Argument must be a point")
+    assert(point == nil or Point.isA(point), "Argument must be a point")
     assert(self.board:isValid(point), "Point not on board")
     assert(not self.board:isPawnAt(point), "Point must be empty")
   end
@@ -147,8 +147,9 @@ function Pawn:setSpace(point)
   end
 
   -- move self
+  local old = self.space
   self.space = point
-  self.board:makeMove(self)
+  self.board:makeMove(self, old)
 end
 
 --[[--

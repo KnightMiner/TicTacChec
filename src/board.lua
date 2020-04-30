@@ -206,7 +206,11 @@ end
 function Board:makeMove(pawn, from)
   assert(Pawn.isA(pawn), "Argument #1 must be a pawn")
   assert(from == nil or Point.isA(from), "Argument #2 must be a point")
-  assert(pawn:getSpace() ~= nil, "Pawn must be on the board")
+  -- if no change, do nothing
+  local to = pawn:getSpace()
+  if from == to then
+    return
+  end
 
   -- increment moves made
   self.moves = self.moves + 1
@@ -215,17 +219,20 @@ function Board:makeMove(pawn, from)
   if from ~= nil then
     self.pawnSpaces[from:getIndex(self.size)] = nil
   end
-  self.pawnSpaces[pawn:getSpace():getIndex(self.size)] = pawn
+  if to ~= nil then
+    self.pawnSpaces[to:getIndex(self.size)] = pawn
+  end
 
   -- update message
   local name = tostring(pawn)
-  local space = pawn:getSpace()
+  if to == nil then
+    self.message = string.format("Removed %s from %d,%d", name, from.x, from.y)
   -- placing
   if from == nil then
-    self.message = string.format("Placed %s at %d,%d", name, space.x, space.y)
+    self.message = string.format("Placed %s at %d,%d", name, to.x, to.y)
   else
     -- moving
-    self.message = string.format("Moved %s from %d,%d to %d,%d", name, from.x, from.y, space.x, space.y)
+    self.message = string.format("Moved %s from %d,%d to %d,%d", name, from.x, from.y, to.x, to.y)
   end
 end
 
