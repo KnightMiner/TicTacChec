@@ -227,13 +227,13 @@ function Board:makeMove(pawn, from)
   local name = tostring(pawn)
   -- removing
   if to == nil then
-    self.message = string.format("Removed %s from %d,%d", name, from.x, from.y)
+    self.message = string.format("Last move: Removed %s from %d,%d", name, from.x, from.y)
   -- placing
   elseif from == nil then
-    self.message = string.format("Placed %s at %d,%d", name, to.x, to.y)
+    self.message = string.format("Last move: Placed %s at %d,%d", name, to.x, to.y)
   else
     -- moving
-    self.message = string.format("Moved %s from %d,%d to %d,%d", name, from.x, from.y, to.x, to.y)
+    self.message = string.format("Last move: Moved %s from %d,%d to %d,%d", name, from.x, from.y, to.x, to.y)
   end
 end
 
@@ -364,7 +364,8 @@ function Board:__tostring()
   for x = 0, self.size - 1 do
     table.insert(line, Color.space(Point(x,-1), x, Color.HEADER))
   end
-  table.insert(out, table.concat(line, "|"))
+  line = {table.concat(line, "|"), " Off Board"}
+  table.insert(out, table.concat(line, " "))
 
   -- main board
   for y = 0, self.size - 1 do
@@ -380,7 +381,16 @@ function Board:__tostring()
         table.insert(line, Color.space(point))
       end
     end
-    table.insert(out, table.concat(line, "|"))
+    line = {table.concat(line, "|"), "  "}
+    for color in self:colorIterator() do
+      local pawn = self:getPawn(color, y+1)
+      if pawn ~= nil and pawn:getSpace() == nil then
+        table.insert(line, tostring(pawn))
+      else
+        table.insert(line, Color.space())
+      end
+    end
+    table.insert(out, table.concat(line, " "))
   end
 
   -- add status message
