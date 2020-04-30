@@ -176,6 +176,7 @@ end
 
   @param count           Number of children to produce
   @param mutationChance  Chance of mutation per weight when agents breed
+  @param mutationSkew    Max amount to randomly skew weights when breeding
   @param clones          Number of the best to clone from this generation
   @return New Generation instance
 ]]
@@ -185,10 +186,12 @@ function Generation:reproduce(data)
   local clones = data.clones or 0
   local rand = data.rand or 0
   local mutationChance = data.mutationChance or 0.05
+  local mutationSkew = data.mutationSkew or 0
   assert(type(count) == "number" and count > 0 and count % 2 == 0, "Count must be an even, positive integer")
   assert(type(clones) == "number" and clones >= 0 and clones % 1 == 0, "Clones must be a non-negative integer")
   assert(type(rand) == "number" and rand >= 0 and rand % 1 == 0, "Rand must be a non-negative integer")
   assert(type(mutationChance) == "number" and mutationChance >= 0 and mutationChance <= 1, "Mutation chance must be a number between 0 and 1")
+  assert(type(mutationSkew) == "number", "Mutation skew must be a number between 0 and 1")
     -- table to hold agents as they are created
   local newAgents = {}
 
@@ -219,7 +222,7 @@ function Generation:reproduce(data)
     local agent1 = getRandomAgent(self, totalScore)
     local agent2 = getRandomAgent(self, totalScore)
     -- Breed the two agents and insert them into the table of new agents
-    table.insert(newAgents, agent1:breed(agent2, mutationChance))
+    table.insert(newAgents, agent1:breed(agent2, mutationChance, mutationSkew))
   end
   return Generation:new(self.definition, newAgents)
 end
@@ -333,6 +336,7 @@ end
     @param clones          Number of the best to clone per generation
     @param rand            Number of random agents to create for each generation
     @param mutationChance  Chance of mutation per weight when agents breed
+    @param mutationSkew    Max amount to randomly skew weights when breeding
     @param returnFinal     If true, only returns the final generation. False (default) returns an array of all trained generations.
 
     @return table of information containing each agent and each generation
@@ -347,6 +351,7 @@ function Generation:run(data)
     local _clones = data.clones or 0
     local _rand = data.rand or 0
     local _mutationChance = data.mutationChance or 0.05
+    local _mutationSkew = data.mutationSkew or 0
     local returnFinal = data.returnFinal or false
     assert(type(games) == "number" and games > 0 and games % 1 == 0, "Games must be a positive integer")
     assert(type(moves) == "number" and moves > 0 and moves % 1 == 0, "Moves must be a positive integer")
@@ -356,6 +361,7 @@ function Generation:run(data)
     assert(type(_clones) == "number" and _clones >= 0 and _clones % 1 == 0, "Clones must be a non-negative integer")
     assert(type(_rand) == "number" and _rand >= 0 and _rand % 1 == 0, "Rand must be a non-negative integer")
     assert(type(_mutationChance) == "number" and _mutationChance >= 0 and _mutationChance <= 1, "Mutation chance must be a number between 0 and 1")
+    assert(type(_mutationSkew) == "number", "Mutation chance must be a number")
     assert(type(returnFinal) == "boolean", "returnAll must be a boolean")
 
     local gens
@@ -375,6 +381,7 @@ function Generation:run(data)
         current = current:reproduce{
           count = _count,
           mutationChance = _mutationChance,
+          mutationSkew = _mutationSkew,
           clones = _clones,
           rand = _rand
         }

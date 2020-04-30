@@ -93,44 +93,38 @@ end
   @param mate         Network to mate with this network
   @param replacement  Percent chance to replace DNA from this network with the other network
   @param mutation     Percent chance to mutate the DNA
+  @param skew         Maximum random offset of genes during breeding
   @return  New bred network
 ]]
-function Network:breed(mate, replacement, mutation)
+function Network:breed(mate, replacement, mutation, skew)
   assert(Network.isA(mate), "Argument #1 must be a Network")
   assert(type(replacement) == "number" and replacement >= 0 and replacement <= 1, "Argument #2 must be a number between 0 and 1")
   assert(type(mutation) == "number" and mutation >= 0 and mutation <= 1, "Argument #3 must be a number between 0 and 1")
+  assert(type(skew) == "number", "Argument #4 must be a number")
   assert(self.definition == mate.definition, "Networks are not compatible")
 
-  local parent = {}
-  local mutations = {}
-  for i = 1, #self.definition.layers do
-    parent[i] = {}
-    mutations[i] = {}
-    for j = 1, self.definition:getSize(i+1) do
-      parent[i][j] = {}
-      mutations[i][j] = {}
-      for k = 1, self.definition:getSize(i) do
-        if math.random() > replacement then parent[i][j][k] = true else parent[i][j][k] = false end
-        -- TODO move mutation to inside if
-        if math.random() > mutation then mutations[i][j][k] = false else mutations[i][j][k] = true end
-      end
-    end
-  end
   local newWeights = {}
   for nodeLayer = 1, #self.definition.layers do
     newWeights[nodeLayer] = {}
     for j = 1, self.definition:getSize(nodeLayer+1) do
       newWeights[nodeLayer][j] = {}
       for k = 1, self.definition:getSize(nodeLayer) do
-        if mutations[nodeLayer][j][k] then
-          newWeights[nodeLayer][j][k] = math.random() * 2 - 1
+        local weight
+        -- if we mutate, new random gene
+        if math.random() <= mutation then
+          weight = math.random()
+        -- no mutation: determine gene to keep
+        elseif math.random() > replacement then
+          weight = self.weights[nodeLayer][j][k]
         else
-          if parent[nodeLayer][j][k] then
-            newWeights[nodeLayer][j][k] = self.weights[nodeLayer][j][k]
-          else
-            newWeights[nodeLayer][j][k] = mate.weights[nodeLayer][j][k]
-          end
+          weight = mate.weights[nodeLayer][j][k]
         end
+        -- offset the gene slightly randomly
+        if skew ~= 0 then
+          weight = weight + (2*math.random() - 1) * skew
+        end
+        -- store the weight
+        newWeights[nodeLayer][j][k] = weight
       end
     end
   end
